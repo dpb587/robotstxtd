@@ -1,0 +1,275 @@
+package server
+
+import (
+	"bytes"
+	"context"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/dpb587/robotstxtd/api"
+	"github.com/dpb587/robotstxtd/internal"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+func (s *Service) Get(ctx context.Context, req *api.Get_Request) (*api.Get_Response, error) {
+	return s.get(req.Origin)
+}
+
+func (s *Service) get(origin string) (*api.Get_Response, error) {
+	var (
+		sLookupTime         string
+		sResponseStatusCode uint32
+		sResponseHeaders    sql.NullString
+		sResponseBody       sql.NullString
+		sResponseBodySha256 sql.NullString
+		sErrorMessage       sql.NullString
+	)
+
+	err := s.db.QueryRow(
+		`
+			SELECT
+				lookup_time,
+				response_status_code,
+				response_headers,
+				response_body,
+				response_body_sha256,
+				error_message
+			FROM cache
+			WHERE origin = ? AND invalidated = 0 AND expire_time > ?
+		`,
+		origin,
+		time.Now().Format(time.RFC3339),
+	).Scan(
+		&sLookupTime,
+		&sResponseStatusCode,
+		&sResponseHeaders,
+		&sResponseBody,
+		&sResponseBodySha256,
+		&sErrorMessage,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return s.getUpstream(origin)
+		}
+
+		return nil, err
+	}
+
+	lookupTime, err := time.Parse(time.RFC3339, sLookupTime)
+	if err != nil {
+		return nil, fmt.Errorf("lookup time: %v", err)
+	}
+
+	res := &api.Get_Response{
+		LookupTime:         timestamppb.New(lookupTime),
+		ResponseStatusCode: sResponseStatusCode,
+	}
+
+	if sResponseHeaders.Valid {
+		res.ResponseHeaders = &sResponseHeaders.String
+	}
+
+	if sResponseBody.Valid {
+		res.ResponseBody = &sResponseBody.String
+	}
+
+	if sResponseBodySha256.Valid {
+		res.ResponseBodySha256 = &sResponseBodySha256.String
+	}
+
+	if sErrorMessage.Valid {
+		res.ErrorMessage = &sErrorMessage.String
+	}
+
+	return res, nil
+}
+
+func (s *Service) getUpstream(origin string) (*api.Get_Response, error) {
+	if !internal.ValidateCanonicalOrigin(origin) {
+		return nil, status.Error(codes.InvalidArgument, "invalid origin")
+	}
+
+	rc := make(chan getUpstreamTaskResult, 1)
+
+	s.getUpstreamTaskRequests <- getUpstreamTaskRequest{
+		origin: origin,
+		result: rc,
+	}
+
+	result := <-rc
+
+	return result.res, result.err
+}
+
+func (s *Service) getUpstreamTaskRequestWorker() {
+	s.log.Info("worker ready")
+	defer s.log.Info("worker done")
+
+	memo := make(map[string]*getUpstreamTaskMemo)
+
+	for req := range s.getUpstreamTaskRequests {
+		e := memo[req.origin]
+		if e == nil {
+			e = &getUpstreamTaskMemo{
+				res:    getUpstreamTaskResult{},
+				waiter: make(chan struct{}),
+			}
+
+			memo[req.origin] = e
+
+			go func() {
+				e.res.res, e.res.err = s.getUpstreamExecute(context.TODO(), req.origin)
+				close(e.waiter)
+			}()
+		}
+
+		go e.done(req.result)
+	}
+}
+
+func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.Get_Response, error) {
+	s.log.Info(
+		"fetch upstream",
+		"origin", origin,
+	)
+
+	requestTime := time.Now()
+
+	res, err := func() (*api.Get_Response, error) {
+		dctx, cancel := context.WithDeadline(ctx, requestTime.Add(s.clientTimeout))
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(
+			dctx,
+			http.MethodGet,
+			fmt.Sprintf("%s/robots.txt", origin),
+			nil,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("User-Agent", s.bot.ClientString())
+
+		res, err := s.client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		defer res.Body.Close()
+
+		var resBodyString *string
+		var resBodySha256Encoded *string
+
+		if res.StatusCode >= 200 && res.StatusCode < 300 {
+			const maxBodySize = 512000 // https://www.rfc-editor.org/rfc/rfc9309#section-2.5
+
+			resBodySha256 := sha256.New()
+
+			resBody, err := io.ReadAll(io.TeeReader(io.LimitReader(res.Body, maxBodySize+1), resBodySha256))
+			if err != nil {
+				return nil, err
+			} else if len(resBody) > maxBodySize {
+				s.log.Warn(
+					"response was truncated",
+					"origin", origin,
+				)
+			}
+
+			_resBodyString := string(resBody)
+			resBodyString = &_resBodyString
+
+			_resBodySha256Encoded := base64.StdEncoding.EncodeToString(resBodySha256.Sum(nil))
+			resBodySha256Encoded = &_resBodySha256Encoded
+		}
+
+		resHeadersBuffer := &bytes.Buffer{}
+		err = res.Header.Write(resHeadersBuffer)
+		if err != nil {
+			return nil, err
+		}
+
+		resHeadersString := strings.TrimSpace(resHeadersBuffer.String())
+
+		_, err = s.db.Exec(
+			`
+				UPDATE cache SET invalidated = 1 WHERE origin = ?;
+				INSERT INTO cache (origin, invalidated, lookup_time, expire_time, response_status_code, response_headers, response_body, response_body_sha256) VALUES (?, 0, ?, ?, ?, ?, ?, ?);
+			`,
+			origin,
+			origin,
+			requestTime.Format(time.RFC3339),
+			requestTime.Add(24*time.Hour).Format(time.RFC3339),
+			uint32(res.StatusCode),
+			resHeadersString,
+			resBodyString,
+			resBodySha256Encoded,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		return &api.Get_Response{
+			LookupTime:         timestamppb.New(requestTime),
+			ResponseStatusCode: uint32(res.StatusCode),
+			ResponseHeaders:    &resHeadersString,
+			ResponseBody:       resBodyString,
+			ResponseBodySha256: resBodySha256Encoded,
+		}, nil
+	}()
+	if err != nil {
+		errorMessage := err.Error()
+
+		_, err := s.db.Exec(
+			`
+				UPDATE cache SET invalidated = 1 WHERE origin = ?;
+				INSERT INTO cache (origin, invalidated, lookup_time, expire_time, response_status_code, error_message) VALUES (?, 0, ?, ?, 0, ?);
+			`,
+			origin,
+			origin,
+			requestTime.Format(time.RFC3339),
+			requestTime.Add(18*time.Hour).Format(time.RFC3339),
+			errorMessage,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		res = &api.Get_Response{
+			LookupTime:         timestamppb.New(requestTime),
+			ResponseStatusCode: 0,
+			ErrorMessage:       &errorMessage,
+		}
+	}
+
+	return res, nil
+}
+
+type getUpstreamTaskRequest struct {
+	origin string
+	result chan<- getUpstreamTaskResult
+}
+
+type getUpstreamTaskResult struct {
+	res *api.Get_Response
+	err error
+}
+
+type getUpstreamTaskMemo struct {
+	res    getUpstreamTaskResult
+	waiter chan struct{}
+}
+
+func (m *getUpstreamTaskMemo) done(out chan<- getUpstreamTaskResult) {
+	<-m.waiter
+	out <- m.res
+}

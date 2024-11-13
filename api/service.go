@@ -1,0 +1,3 @@
+package api
+
+type Eval_Response_Result isEval_Response_Result

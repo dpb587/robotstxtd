@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package io.github.dpb587.robotstxtd.api;
+option go_package = "github.com/dpb587/robotstxtd/api";
+
+import "google/protobuf/timestamp.proto";
+
+service Service {
+  rpc Get(Get.Request) returns (Get.Response);
+  rpc Eval(Eval.Request) returns (Eval.Response);
+  rpc Flush(Flush.Request) returns (Flush.Response);
+}
+
+message Get {
+  message Request {
+    string origin = 1;
+  }
+
+  message Response {
+    google.protobuf.Timestamp lookup_time = 1;
+    uint32 response_status_code = 2;
+    optional string response_headers = 3;
+    optional string response_body = 4;
+    optional string response_body_sha256 = 5;
+    optional string error_message = 6;
+  }
+}
+
+message Eval {
+  message Request {
+    string url = 1;
+  }
+
+  message Response {
+    message ResultAllow {}
+
+    message ResultDisallow {
+      optional uint32 match_line = 1;
+      optional string match_line_contents = 2;
+    }
+
+    message ResultError {
+      string error_message = 1;
+    }
+
+    google.protobuf.Timestamp lookup_time = 1;
+
+    oneof result {
+      ResultAllow result_allow = 2;
+      ResultDisallow result_disallow = 3;
+      ResultError result_error = 4;
+    }
+  }
+}
+
+message Flush {
+  message Request {
+    string origin = 1;
+    optional google.protobuf.Timestamp min_lookup_time = 2;
+  }
+
+  message Response {}
+}
