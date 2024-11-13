@@ -1,7 +1,9 @@
 # robotstxtd
 
-## RPC
+A simple cache service for `robots.txt` files to be used by other agents.
 
-robotstxtctl get https://dpb587.me
-robotstxtctl eval https://dpb587.me/posts
-robotstxtctl flush https://dpb587.me
+* https://www.rfc-editor.org/rfc/rfc9309.html
+
+## License
+
+[MIT License](LICENSE)

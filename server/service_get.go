@@ -229,6 +229,12 @@ func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.G
 	if err != nil {
 		errorMessage := err.Error()
 
+		s.log.Error(
+			"fetch failed",
+			"origin", origin,
+			"error", err,
+		)
+
 		_, err := s.db.Exec(
 			`
 				UPDATE cache SET invalidated = 1 WHERE origin = ?;
