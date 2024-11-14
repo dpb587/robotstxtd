@@ -1,12 +1,12 @@
 package server
 
 import (
+	"context"
 	"database/sql"
 	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/dpb587/robotstxtd/agent"
 	"github.com/dpb587/robotstxtd/api"
 )
 
@@ -17,19 +17,19 @@ type Service struct {
 	db            *sql.DB
 	client        *http.Client
 	clientTimeout time.Duration
-	bot           agent.Bot
+	bot           *api.Bot
 
-	getUpstreamTaskRequests chan getUpstreamTaskRequest
+	getUpstreamTaskRequests chan getOriginUpstreamTaskRequest
 }
 
 var _ api.ServiceServer = &Service{}
 
-func NewService(log *slog.Logger, db *sql.DB, client *http.Client, clientTimeout time.Duration, bot agent.Bot) *Service {
+func NewService(log *slog.Logger, db *sql.DB, client *http.Client, clientTimeout time.Duration, bot *api.Bot) *Service {
 	if len(bot.Name) == 0 {
 		panic("missing bot name")
 	} else if len(bot.Version) == 0 {
 		panic("missing bot version")
-	} else if len(bot.URL) == 0 {
+	} else if len(bot.Url) == 0 {
 		panic("missing bot url")
 	}
 
@@ -39,12 +39,18 @@ func NewService(log *slog.Logger, db *sql.DB, client *http.Client, clientTimeout
 		client:                  client,
 		clientTimeout:           clientTimeout,
 		bot:                     bot,
-		getUpstreamTaskRequests: make(chan getUpstreamTaskRequest),
+		getUpstreamTaskRequests: make(chan getOriginUpstreamTaskRequest),
 	}
 
-	go s.getUpstreamTaskRequestWorker()
+	go s.getOriginUpstreamTaskRequestWorker()
 
 	return s
+}
+
+func (s *Service) GetBot(ctx context.Context, req *api.GetBot_Request) (*api.GetBot_Response, error) {
+	return &api.GetBot_Response{
+		Bot: s.bot,
+	}, nil
 }
 
 func (s *Service) Prune() error {

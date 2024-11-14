@@ -14,7 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dpb587/robotstxtd/agent"
 	"github.com/dpb587/robotstxtd/api"
 	"github.com/dpb587/robotstxtd/server"
 	"github.com/dpb587/robotstxtd/server/storage"
@@ -30,7 +29,7 @@ func main() {
 	var httpProxy string = ""
 	var httpsProxy string = ""
 	var caCert string = ""
-	var bot agent.Bot
+	var bot = &api.Bot{}
 
 	var (
 		httpClient     *http.Client
@@ -167,7 +166,7 @@ func main() {
 	cmd.Flags().StringVar(&bindAddress, "bind", bindAddress, "")
 	cmd.Flags().StringVar(&bot.Name, "bot-name", bot.Name, "")
 	cmd.Flags().StringVar(&bot.Version, "bot-version", bot.Version, "")
-	cmd.Flags().StringVar(&bot.URL, "bot-url", bot.URL, "")
+	cmd.Flags().StringVar(&bot.Url, "bot-url", bot.Url, "")
 	cmd.Flags().StringVar(&httpProxy, "http-proxy", httpProxy, "")
 	cmd.Flags().StringVar(&httpsProxy, "https-proxy", httpsProxy, "")
 	cmd.Flags().StringVar(&caCert, "ca-cert", caCert, "")

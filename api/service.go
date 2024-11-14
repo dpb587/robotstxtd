@@ -1,3 +1,3 @@
 package api
 
-type Eval_Response_Result isEval_Response_Result
+type EvalUrl_Response_Result isEvalUrl_Response_Result

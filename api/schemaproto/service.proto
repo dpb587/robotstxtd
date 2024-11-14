@@ -6,27 +6,54 @@ option go_package = "github.com/dpb587/robotstxtd/api";
 import "google/protobuf/timestamp.proto";
 
 service Service {
-  rpc Get(Get.Request) returns (Get.Response);
-  rpc Eval(Eval.Request) returns (Eval.Response);
-  rpc Flush(Flush.Request) returns (Flush.Response);
+  rpc GetBot(GetBot.Request) returns (GetBot.Response);
+
+  rpc GetOrigin(GetOrigin.Request) returns (GetOrigin.Response);
+  rpc FlushOrigin(FlushOrigin.Request) returns (FlushOrigin.Response);
+
+  rpc EvalUrl(EvalUrl.Request) returns (EvalUrl.Response);
 }
 
-message Get {
+message Bot {
+  string name = 1;
+  string version = 2;
+  string url = 3;
+}
+
+message GetBot {
+  message Request {}
+
+  message Response {
+    Bot bot = 1;
+  }
+}
+
+message GetOrigin {
   message Request {
     string origin = 1;
   }
 
   message Response {
     google.protobuf.Timestamp lookup_time = 1;
-    uint32 response_status_code = 2;
-    optional string response_headers = 3;
-    optional string response_body = 4;
-    optional string response_body_sha256 = 5;
-    optional string error_message = 6;
+    google.protobuf.Timestamp stale_time = 2;
+    uint32 response_status_code = 3;
+    optional string response_headers = 4;
+    optional string response_body = 5;
+    optional string response_body_sha256 = 6;
+    optional string error_message = 7;
   }
 }
 
-message Eval {
+message FlushOrigin {
+  message Request {
+    string origin = 1;
+    optional google.protobuf.Timestamp min_lookup_time = 2;
+  }
+
+  message Response {}
+}
+
+message EvalUrl {
   message Request {
     string url = 1;
   }
@@ -51,13 +78,4 @@ message Eval {
       ResultError result_error = 4;
     }
   }
-}
-
-message Flush {
-  message Request {
-    string origin = 1;
-    optional google.protobuf.Timestamp min_lookup_time = 2;
-  }
-
-  message Response {}
 }

@@ -48,8 +48,34 @@ func main() {
 	}
 
 	{
-		evalCommand := &cobra.Command{
-			Use:  "eval",
+		getBotCommand := &cobra.Command{
+			Use:  "get-bot",
+			Args: cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				cc, err := clientConnFactory()
+				if err != nil {
+					return fmt.Errorf("client: %v", err)
+				}
+
+				client := api.NewServiceClient(cc)
+
+				res, err := client.GetBot(cmd.Context(), &api.GetBot_Request{})
+				if err != nil {
+					return fmt.Errorf("api: get: %v", err)
+				}
+
+				fmt.Fprintf(os.Stdout, "%s\n", res.Bot.ClientString())
+
+				return nil
+			},
+		}
+
+		cmd.AddCommand(getBotCommand)
+	}
+
+	{
+		evalUrlCommand := &cobra.Command{
+			Use:  "eval-url",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				cc, err := clientConnFactory()
@@ -59,7 +85,7 @@ func main() {
 
 				client := api.NewServiceClient(cc)
 
-				res, err := client.Eval(cmd.Context(), &api.Eval_Request{
+				res, err := client.EvalUrl(cmd.Context(), &api.EvalUrl_Request{
 					Url: args[0],
 				})
 				if err != nil {
@@ -67,17 +93,17 @@ func main() {
 				}
 
 				switch result := res.Result.(type) {
-				case *api.Eval_Response_ResultError_:
+				case *api.EvalUrl_Response_ResultError_:
 					fmt.Fprintf(os.Stderr, "ERROR: %s\n", result.ResultError.ErrorMessage)
 
 					os.Exit(1)
-				case *api.Eval_Response_ResultDisallow_:
+				case *api.EvalUrl_Response_ResultDisallow_:
 					if result.ResultDisallow.MatchLineContents != nil {
 						fmt.Fprintf(os.Stderr, "%s\n", *result.ResultDisallow.MatchLineContents)
 					}
 
 					os.Exit(1)
-				case *api.Eval_Response_ResultAllow_:
+				case *api.EvalUrl_Response_ResultAllow_:
 					// nop
 				default:
 					return fmt.Errorf("unexpected result: %#+v", result)
@@ -87,12 +113,12 @@ func main() {
 			},
 		}
 
-		cmd.AddCommand(evalCommand)
+		cmd.AddCommand(evalUrlCommand)
 	}
 
 	{
-		flushCommand := &cobra.Command{
-			Use:  "flush",
+		flushOriginCommand := &cobra.Command{
+			Use:  "flush-origin",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				cc, err := clientConnFactory()
@@ -106,7 +132,7 @@ func main() {
 					return fmt.Errorf("validate: invalid origin: %s", args[0])
 				}
 
-				_, err = client.Flush(cmd.Context(), &api.Flush_Request{
+				_, err = client.FlushOrigin(cmd.Context(), &api.FlushOrigin_Request{
 					Origin: args[0],
 				})
 				if err != nil {
@@ -117,12 +143,12 @@ func main() {
 			},
 		}
 
-		cmd.AddCommand(flushCommand)
+		cmd.AddCommand(flushOriginCommand)
 	}
 
 	{
-		getCommand := &cobra.Command{
-			Use:  "get",
+		getOriginCommand := &cobra.Command{
+			Use:  "get-origin",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				cc, err := clientConnFactory()
@@ -136,7 +162,7 @@ func main() {
 					return fmt.Errorf("validate: invalid origin: %s", args[0])
 				}
 
-				res, err := client.Get(cmd.Context(), &api.Get_Request{
+				res, err := client.GetOrigin(cmd.Context(), &api.GetOrigin_Request{
 					Origin: args[0],
 				})
 				if err != nil {
@@ -162,7 +188,7 @@ func main() {
 			},
 		}
 
-		cmd.AddCommand(getCommand)
+		cmd.AddCommand(getOriginCommand)
 	}
 
 	cmd.PersistentFlags().StringVar(&serverAddress, "server", serverAddress, "")

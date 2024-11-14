@@ -20,11 +20,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Service) Get(ctx context.Context, req *api.Get_Request) (*api.Get_Response, error) {
-	return s.get(req.Origin)
+func (s *Service) GetOrigin(ctx context.Context, req *api.GetOrigin_Request) (*api.GetOrigin_Response, error) {
+	return s.getOrigin(req.Origin)
 }
 
-func (s *Service) get(origin string) (*api.Get_Response, error) {
+func (s *Service) getOrigin(origin string) (*api.GetOrigin_Response, error) {
 	var (
 		sLookupTime         string
 		sResponseStatusCode uint32
@@ -44,7 +44,7 @@ func (s *Service) get(origin string) (*api.Get_Response, error) {
 				response_body_sha256,
 				error_message
 			FROM cache
-			WHERE origin = ? AND invalidated = 0 AND expire_time > ?
+			WHERE origin = ? AND invalidated = 0 AND stale_time > ?
 		`,
 		origin,
 		time.Now().Format(time.RFC3339),
@@ -58,7 +58,7 @@ func (s *Service) get(origin string) (*api.Get_Response, error) {
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return s.getUpstream(origin)
+			return s.getOriginUpstream(origin)
 		}
 
 		return nil, err
@@ -69,7 +69,7 @@ func (s *Service) get(origin string) (*api.Get_Response, error) {
 		return nil, fmt.Errorf("lookup time: %v", err)
 	}
 
-	res := &api.Get_Response{
+	res := &api.GetOrigin_Response{
 		LookupTime:         timestamppb.New(lookupTime),
 		ResponseStatusCode: sResponseStatusCode,
 	}
@@ -93,14 +93,14 @@ func (s *Service) get(origin string) (*api.Get_Response, error) {
 	return res, nil
 }
 
-func (s *Service) getUpstream(origin string) (*api.Get_Response, error) {
+func (s *Service) getOriginUpstream(origin string) (*api.GetOrigin_Response, error) {
 	if !internal.ValidateCanonicalOrigin(origin) {
 		return nil, status.Error(codes.InvalidArgument, "invalid origin")
 	}
 
 	rc := make(chan getUpstreamTaskResult, 1)
 
-	s.getUpstreamTaskRequests <- getUpstreamTaskRequest{
+	s.getUpstreamTaskRequests <- getOriginUpstreamTaskRequest{
 		origin: origin,
 		result: rc,
 	}
@@ -110,7 +110,7 @@ func (s *Service) getUpstream(origin string) (*api.Get_Response, error) {
 	return result.res, result.err
 }
 
-func (s *Service) getUpstreamTaskRequestWorker() {
+func (s *Service) getOriginUpstreamTaskRequestWorker() {
 	s.log.Info("worker ready")
 	defer s.log.Info("worker done")
 
@@ -127,7 +127,7 @@ func (s *Service) getUpstreamTaskRequestWorker() {
 			memo[req.origin] = e
 
 			go func() {
-				e.res.res, e.res.err = s.getUpstreamExecute(context.TODO(), req.origin)
+				e.res.res, e.res.err = s.getOriginUpstreamExecute(context.TODO(), req.origin)
 				close(e.waiter)
 			}()
 		}
@@ -136,7 +136,7 @@ func (s *Service) getUpstreamTaskRequestWorker() {
 	}
 }
 
-func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.Get_Response, error) {
+func (s *Service) getOriginUpstreamExecute(ctx context.Context, origin string) (*api.GetOrigin_Response, error) {
 	s.log.Info(
 		"fetch upstream",
 		"origin", origin,
@@ -144,7 +144,7 @@ func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.G
 
 	requestTime := time.Now()
 
-	res, err := func() (*api.Get_Response, error) {
+	res, err := func() (*api.GetOrigin_Response, error) {
 		dctx, cancel := context.WithDeadline(ctx, requestTime.Add(s.clientTimeout))
 		defer cancel()
 
@@ -203,7 +203,7 @@ func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.G
 		_, err = s.db.Exec(
 			`
 				UPDATE cache SET invalidated = 1 WHERE origin = ?;
-				INSERT INTO cache (origin, invalidated, lookup_time, expire_time, response_status_code, response_headers, response_body, response_body_sha256) VALUES (?, 0, ?, ?, ?, ?, ?, ?);
+				INSERT INTO cache (origin, invalidated, lookup_time, stale_time, response_status_code, response_headers, response_body, response_body_sha256) VALUES (?, 0, ?, ?, ?, ?, ?, ?);
 			`,
 			origin,
 			origin,
@@ -218,7 +218,7 @@ func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.G
 			return nil, err
 		}
 
-		return &api.Get_Response{
+		return &api.GetOrigin_Response{
 			LookupTime:         timestamppb.New(requestTime),
 			ResponseStatusCode: uint32(res.StatusCode),
 			ResponseHeaders:    &resHeadersString,
@@ -238,7 +238,7 @@ func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.G
 		_, err := s.db.Exec(
 			`
 				UPDATE cache SET invalidated = 1 WHERE origin = ?;
-				INSERT INTO cache (origin, invalidated, lookup_time, expire_time, response_status_code, error_message) VALUES (?, 0, ?, ?, 0, ?);
+				INSERT INTO cache (origin, invalidated, lookup_time, stale_time, response_status_code, error_message) VALUES (?, 0, ?, ?, 0, ?);
 			`,
 			origin,
 			origin,
@@ -250,7 +250,7 @@ func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.G
 			return nil, err
 		}
 
-		res = &api.Get_Response{
+		res = &api.GetOrigin_Response{
 			LookupTime:         timestamppb.New(requestTime),
 			ResponseStatusCode: 0,
 			ErrorMessage:       &errorMessage,
@@ -260,13 +260,13 @@ func (s *Service) getUpstreamExecute(ctx context.Context, origin string) (*api.G
 	return res, nil
 }
 
-type getUpstreamTaskRequest struct {
+type getOriginUpstreamTaskRequest struct {
 	origin string
 	result chan<- getUpstreamTaskResult
 }
 
 type getUpstreamTaskResult struct {
-	res *api.Get_Response
+	res *api.GetOrigin_Response
 	err error
 }
 

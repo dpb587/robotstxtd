@@ -19,18 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Service_Get_FullMethodName   = "/io.github.dpb587.robotstxtd.api.Service/Get"
-	Service_Eval_FullMethodName  = "/io.github.dpb587.robotstxtd.api.Service/Eval"
-	Service_Flush_FullMethodName = "/io.github.dpb587.robotstxtd.api.Service/Flush"
+	Service_GetBot_FullMethodName      = "/io.github.dpb587.robotstxtd.api.Service/GetBot"
+	Service_GetOrigin_FullMethodName   = "/io.github.dpb587.robotstxtd.api.Service/GetOrigin"
+	Service_FlushOrigin_FullMethodName = "/io.github.dpb587.robotstxtd.api.Service/FlushOrigin"
+	Service_EvalUrl_FullMethodName     = "/io.github.dpb587.robotstxtd.api.Service/EvalUrl"
 )
 
 // ServiceClient is the client API for Service service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
-	Get(ctx context.Context, in *Get_Request, opts ...grpc.CallOption) (*Get_Response, error)
-	Eval(ctx context.Context, in *Eval_Request, opts ...grpc.CallOption) (*Eval_Response, error)
-	Flush(ctx context.Context, in *Flush_Request, opts ...grpc.CallOption) (*Flush_Response, error)
+	GetBot(ctx context.Context, in *GetBot_Request, opts ...grpc.CallOption) (*GetBot_Response, error)
+	GetOrigin(ctx context.Context, in *GetOrigin_Request, opts ...grpc.CallOption) (*GetOrigin_Response, error)
+	FlushOrigin(ctx context.Context, in *FlushOrigin_Request, opts ...grpc.CallOption) (*FlushOrigin_Response, error)
+	EvalUrl(ctx context.Context, in *EvalUrl_Request, opts ...grpc.CallOption) (*EvalUrl_Response, error)
 }
 
 type serviceClient struct {
@@ -41,30 +43,40 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 	return &serviceClient{cc}
 }
 
-func (c *serviceClient) Get(ctx context.Context, in *Get_Request, opts ...grpc.CallOption) (*Get_Response, error) {
+func (c *serviceClient) GetBot(ctx context.Context, in *GetBot_Request, opts ...grpc.CallOption) (*GetBot_Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Get_Response)
-	err := c.cc.Invoke(ctx, Service_Get_FullMethodName, in, out, cOpts...)
+	out := new(GetBot_Response)
+	err := c.cc.Invoke(ctx, Service_GetBot_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serviceClient) Eval(ctx context.Context, in *Eval_Request, opts ...grpc.CallOption) (*Eval_Response, error) {
+func (c *serviceClient) GetOrigin(ctx context.Context, in *GetOrigin_Request, opts ...grpc.CallOption) (*GetOrigin_Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Eval_Response)
-	err := c.cc.Invoke(ctx, Service_Eval_FullMethodName, in, out, cOpts...)
+	out := new(GetOrigin_Response)
+	err := c.cc.Invoke(ctx, Service_GetOrigin_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serviceClient) Flush(ctx context.Context, in *Flush_Request, opts ...grpc.CallOption) (*Flush_Response, error) {
+func (c *serviceClient) FlushOrigin(ctx context.Context, in *FlushOrigin_Request, opts ...grpc.CallOption) (*FlushOrigin_Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Flush_Response)
-	err := c.cc.Invoke(ctx, Service_Flush_FullMethodName, in, out, cOpts...)
+	out := new(FlushOrigin_Response)
+	err := c.cc.Invoke(ctx, Service_FlushOrigin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *serviceClient) EvalUrl(ctx context.Context, in *EvalUrl_Request, opts ...grpc.CallOption) (*EvalUrl_Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EvalUrl_Response)
+	err := c.cc.Invoke(ctx, Service_EvalUrl_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,9 +87,10 @@ func (c *serviceClient) Flush(ctx context.Context, in *Flush_Request, opts ...gr
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility.
 type ServiceServer interface {
-	Get(context.Context, *Get_Request) (*Get_Response, error)
-	Eval(context.Context, *Eval_Request) (*Eval_Response, error)
-	Flush(context.Context, *Flush_Request) (*Flush_Response, error)
+	GetBot(context.Context, *GetBot_Request) (*GetBot_Response, error)
+	GetOrigin(context.Context, *GetOrigin_Request) (*GetOrigin_Response, error)
+	FlushOrigin(context.Context, *FlushOrigin_Request) (*FlushOrigin_Response, error)
+	EvalUrl(context.Context, *EvalUrl_Request) (*EvalUrl_Response, error)
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -88,14 +101,17 @@ type ServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedServiceServer struct{}
 
-func (UnimplementedServiceServer) Get(context.Context, *Get_Request) (*Get_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+func (UnimplementedServiceServer) GetBot(context.Context, *GetBot_Request) (*GetBot_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBot not implemented")
 }
-func (UnimplementedServiceServer) Eval(context.Context, *Eval_Request) (*Eval_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Eval not implemented")
+func (UnimplementedServiceServer) GetOrigin(context.Context, *GetOrigin_Request) (*GetOrigin_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOrigin not implemented")
 }
-func (UnimplementedServiceServer) Flush(context.Context, *Flush_Request) (*Flush_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Flush not implemented")
+func (UnimplementedServiceServer) FlushOrigin(context.Context, *FlushOrigin_Request) (*FlushOrigin_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FlushOrigin not implemented")
+}
+func (UnimplementedServiceServer) EvalUrl(context.Context, *EvalUrl_Request) (*EvalUrl_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EvalUrl not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 func (UnimplementedServiceServer) testEmbeddedByValue()                 {}
@@ -118,56 +134,74 @@ func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) {
 	s.RegisterService(&Service_ServiceDesc, srv)
 }
 
-func _Service_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Get_Request)
+func _Service_GetBot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBot_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceServer).Get(ctx, in)
+		return srv.(ServiceServer).GetBot(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Service_Get_FullMethodName,
+		FullMethod: Service_GetBot_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).Get(ctx, req.(*Get_Request))
+		return srv.(ServiceServer).GetBot(ctx, req.(*GetBot_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Service_Eval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Eval_Request)
+func _Service_GetOrigin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrigin_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceServer).Eval(ctx, in)
+		return srv.(ServiceServer).GetOrigin(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Service_Eval_FullMethodName,
+		FullMethod: Service_GetOrigin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).Eval(ctx, req.(*Eval_Request))
+		return srv.(ServiceServer).GetOrigin(ctx, req.(*GetOrigin_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Service_Flush_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Flush_Request)
+func _Service_FlushOrigin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FlushOrigin_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceServer).Flush(ctx, in)
+		return srv.(ServiceServer).FlushOrigin(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Service_Flush_FullMethodName,
+		FullMethod: Service_FlushOrigin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).Flush(ctx, req.(*Flush_Request))
+		return srv.(ServiceServer).FlushOrigin(ctx, req.(*FlushOrigin_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_EvalUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EvalUrl_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).EvalUrl(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Service_EvalUrl_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).EvalUrl(ctx, req.(*EvalUrl_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -180,16 +214,20 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Get",
-			Handler:    _Service_Get_Handler,
+			MethodName: "GetBot",
+			Handler:    _Service_GetBot_Handler,
 		},
 		{
-			MethodName: "Eval",
-			Handler:    _Service_Eval_Handler,
+			MethodName: "GetOrigin",
+			Handler:    _Service_GetOrigin_Handler,
 		},
 		{
-			MethodName: "Flush",
-			Handler:    _Service_Flush_Handler,
+			MethodName: "FlushOrigin",
+			Handler:    _Service_FlushOrigin_Handler,
+		},
+		{
+			MethodName: "EvalUrl",
+			Handler:    _Service_EvalUrl_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

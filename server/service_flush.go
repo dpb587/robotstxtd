@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Service) Flush(ctx context.Context, req *api.Flush_Request) (*api.Flush_Response, error) {
+func (s *Service) FlushOrigin(ctx context.Context, req *api.FlushOrigin_Request) (*api.FlushOrigin_Response, error) {
 	s.log.Info(
 		"flush origin",
 		"origin", req.Origin,
@@ -33,5 +33,5 @@ func (s *Service) Flush(ctx context.Context, req *api.Flush_Request) (*api.Flush
 		return nil, fmt.Errorf("db: %v", err)
 	}
 
-	return &api.Flush_Response{}, nil
+	return &api.FlushOrigin_Response{}, nil
 }
