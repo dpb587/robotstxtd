@@ -167,6 +167,7 @@ func main() {
 	cmd.Flags().StringVar(&bot.Name, "bot-name", bot.Name, "")
 	cmd.Flags().StringVar(&bot.Version, "bot-version", bot.Version, "")
 	cmd.Flags().StringVar(&bot.Url, "bot-url", bot.Url, "")
+	cmd.Flags().StringVar(&bot.From, "bot-from", bot.From, "")
 	cmd.Flags().StringVar(&httpProxy, "http-proxy", httpProxy, "")
 	cmd.Flags().StringVar(&httpsProxy, "https-proxy", httpsProxy, "")
 	cmd.Flags().StringVar(&caCert, "ca-cert", caCert, "")

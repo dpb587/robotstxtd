@@ -4,44 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sync"
 
 	"github.com/dpb587/robotstxtd/api"
+	"github.com/dpb587/robotstxtd/cmd/cmdflags"
 	"github.com/dpb587/robotstxtd/internal"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
-	// log := slog.Default()
-
-	var serverAddress string
-
-	var (
-		clientConn     *grpc.ClientConn
-		clientConnErr  error
-		clientConnOnce sync.Once
-	)
-
-	defer func() {
-		if clientConn == nil {
-			return
-		}
-
-		clientConn.Close()
-	}()
-
-	clientConnFactory := func() (*grpc.ClientConn, error) {
-		clientConnOnce.Do(func() {
-			clientConn, clientConnErr = grpc.NewClient(
-				serverAddress,
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-			)
-		})
-
-		return clientConn, clientConnErr
-	}
+	var fServiceClient cmdflags.ServiceClient
 
 	cmd := &cobra.Command{
 		Use: "robotstxtctl",
@@ -52,12 +23,14 @@ func main() {
 			Use:  "get-bot",
 			Args: cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				cc, err := clientConnFactory()
+				serviceClientValue, err := fServiceClient.New()
 				if err != nil {
-					return fmt.Errorf("client: %v", err)
+					return err
 				}
 
-				client := api.NewServiceClient(cc)
+				defer serviceClientValue.ConnectionCloser()
+
+				client := serviceClientValue.ServiceClient
 
 				res, err := client.GetBot(cmd.Context(), &api.GetBot_Request{})
 				if err != nil {
@@ -78,12 +51,14 @@ func main() {
 			Use:  "eval-url",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				cc, err := clientConnFactory()
+				serviceClientValue, err := fServiceClient.New()
 				if err != nil {
-					return fmt.Errorf("client: %v", err)
+					return err
 				}
 
-				client := api.NewServiceClient(cc)
+				defer serviceClientValue.ConnectionCloser()
+
+				client := serviceClientValue.ServiceClient
 
 				res, err := client.EvalUrl(cmd.Context(), &api.EvalUrl_Request{
 					Url: args[0],
@@ -121,12 +96,14 @@ func main() {
 			Use:  "flush-origin",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				cc, err := clientConnFactory()
+				serviceClientValue, err := fServiceClient.New()
 				if err != nil {
-					return fmt.Errorf("client: %v", err)
+					return err
 				}
 
-				client := api.NewServiceClient(cc)
+				defer serviceClientValue.ConnectionCloser()
+
+				client := serviceClientValue.ServiceClient
 
 				if !internal.ValidateCanonicalOrigin(args[0]) {
 					return fmt.Errorf("validate: invalid origin: %s", args[0])
@@ -151,12 +128,14 @@ func main() {
 			Use:  "get-origin",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				cc, err := clientConnFactory()
+				serviceClientValue, err := fServiceClient.New()
 				if err != nil {
-					return fmt.Errorf("client: %v", err)
+					return err
 				}
 
-				client := api.NewServiceClient(cc)
+				defer serviceClientValue.ConnectionCloser()
+
+				client := serviceClientValue.ServiceClient
 
 				if !internal.ValidateCanonicalOrigin(args[0]) {
 					return fmt.Errorf("validate: invalid origin: %s", args[0])
@@ -191,7 +170,7 @@ func main() {
 		cmd.AddCommand(getOriginCommand)
 	}
 
-	cmd.PersistentFlags().StringVar(&serverAddress, "server", serverAddress, "")
+	fServiceClient.BindFlags(cmd.PersistentFlags(), "")
 
 	err := cmd.Execute()
 	if err != nil {

@@ -98,7 +98,7 @@ func (s *Service) getOriginUpstream(origin string) (*api.GetOrigin_Response, err
 		return nil, status.Error(codes.InvalidArgument, "invalid origin")
 	}
 
-	rc := make(chan getUpstreamTaskResult, 1)
+	rc := make(chan getOriginUpstreamTaskResult, 1)
 
 	s.getUpstreamTaskRequests <- getOriginUpstreamTaskRequest{
 		origin: origin,
@@ -114,13 +114,13 @@ func (s *Service) getOriginUpstreamTaskRequestWorker() {
 	s.log.Info("worker ready")
 	defer s.log.Info("worker done")
 
-	memo := make(map[string]*getUpstreamTaskMemo)
+	memo := make(map[string]*getOriginUpstreamTaskMemo)
 
 	for req := range s.getUpstreamTaskRequests {
 		e := memo[req.origin]
 		if e == nil {
-			e = &getUpstreamTaskMemo{
-				res:    getUpstreamTaskResult{},
+			e = &getOriginUpstreamTaskMemo{
+				res:    getOriginUpstreamTaskResult{},
 				waiter: make(chan struct{}),
 			}
 
@@ -262,20 +262,20 @@ func (s *Service) getOriginUpstreamExecute(ctx context.Context, origin string) (
 
 type getOriginUpstreamTaskRequest struct {
 	origin string
-	result chan<- getUpstreamTaskResult
+	result chan<- getOriginUpstreamTaskResult
 }
 
-type getUpstreamTaskResult struct {
+type getOriginUpstreamTaskResult struct {
 	res *api.GetOrigin_Response
 	err error
 }
 
-type getUpstreamTaskMemo struct {
-	res    getUpstreamTaskResult
+type getOriginUpstreamTaskMemo struct {
+	res    getOriginUpstreamTaskResult
 	waiter chan struct{}
 }
 
-func (m *getUpstreamTaskMemo) done(out chan<- getUpstreamTaskResult) {
+func (m *getOriginUpstreamTaskMemo) done(out chan<- getOriginUpstreamTaskResult) {
 	<-m.waiter
 	out <- m.res
 }

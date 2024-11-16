@@ -30,7 +30,7 @@ func NewClient(upstream api.ServiceClient) *Client {
 }
 
 func (c *Client) GetBot(ctx context.Context, req *api.GetBot_Request, opts ...grpc.CallOption) (*api.GetBot_Response, error) {
-	if c.cacheGetBot != nil {
+	if c.cacheGetBot == nil {
 		res, err := c.upstream.GetBot(ctx, req, opts...)
 		if err != nil {
 			return nil, err
