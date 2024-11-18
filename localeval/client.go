@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/dpb587/robotstxtd/api"
@@ -17,6 +18,8 @@ import (
 type Client struct {
 	upstream               api.ServiceClient
 	cacheGetBot            *api.GetBot_Response
+	cacheGetBotMutex       sync.Mutex
+	cacheGetOriginMutex    sync.Mutex
 	cacheGetOriginByOrigin map[string]*api.GetOrigin_Response
 }
 
@@ -30,22 +33,31 @@ func NewClient(upstream api.ServiceClient) *Client {
 }
 
 func (c *Client) GetBot(ctx context.Context, req *api.GetBot_Request, opts ...grpc.CallOption) (*api.GetBot_Response, error) {
+	c.cacheGetBotMutex.Lock()
 	if c.cacheGetBot == nil {
 		res, err := c.upstream.GetBot(ctx, req, opts...)
 		if err != nil {
+			c.cacheGetBotMutex.Unlock()
+
 			return nil, err
 		}
 
 		c.cacheGetBot = res
 	}
 
+	c.cacheGetBotMutex.Unlock()
+
 	return c.cacheGetBot, nil
 }
 
 func (c *Client) GetOrigin(ctx context.Context, req *api.GetOrigin_Request, opts ...grpc.CallOption) (*api.GetOrigin_Response, error) {
+	c.cacheGetOriginMutex.Lock()
+
 	cached, known := c.cacheGetOriginByOrigin[req.Origin]
 	if known {
 		if cached.StaleTime.AsTime().After(time.Now()) {
+			c.cacheGetOriginMutex.Unlock()
+
 			return cached, nil
 		}
 
@@ -54,10 +66,14 @@ func (c *Client) GetOrigin(ctx context.Context, req *api.GetOrigin_Request, opts
 
 	res, err := c.upstream.GetOrigin(ctx, req, opts...)
 	if err != nil {
+		c.cacheGetOriginMutex.Unlock()
+
 		return nil, err
 	}
 
 	c.cacheGetOriginByOrigin[req.Origin] = res
+
+	c.cacheGetOriginMutex.Unlock()
 
 	return res, nil
 }
