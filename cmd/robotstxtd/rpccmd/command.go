@@ -1,4 +1,4 @@
-package main
+package rpccmd
 
 import (
 	"fmt"
@@ -9,13 +9,14 @@ import (
 	"github.com/dpb587/robotstxtd/cmd/cmdflags"
 	"github.com/dpb587/robotstxtd/internal"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
-func main() {
+func NewCommand() *cobra.Command {
 	var fServiceClient cmdflags.ServiceClient
 
 	cmd := &cobra.Command{
-		Use: "robotstxtctl",
+		Use: "rpc",
 	}
 
 	{
@@ -37,7 +38,7 @@ func main() {
 					return fmt.Errorf("api: get: %v", err)
 				}
 
-				fmt.Fprintf(os.Stdout, "%s\n", res.Bot.ClientString())
+				cmd.OutOrStdout().Write([]byte(prototext.Format(res)))
 
 				return nil
 			},
@@ -172,8 +173,5 @@ func main() {
 
 	fServiceClient.BindFlags(cmd.PersistentFlags(), "")
 
-	err := cmd.Execute()
-	if err != nil {
-		panic(err)
-	}
+	return cmd
 }

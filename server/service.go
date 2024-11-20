@@ -31,7 +31,7 @@ func NewService(log *slog.Logger, db *sql.DB, client *http.Client, clientTimeout
 		panic("missing bot version")
 	} else if len(bot.Url) == 0 {
 		panic("missing bot url")
-	} else if len(bot.From) == 0 {
+	} else if len(bot.Email) == 0 {
 		panic("missing bot from")
 	}
 

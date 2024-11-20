@@ -18,7 +18,7 @@ message Bot {
   string name = 1;
   string version = 2;
   string url = 3;
-  string from = 4;
+  string email = 4;
 }
 
 message GetBot {
