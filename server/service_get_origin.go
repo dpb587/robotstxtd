@@ -243,7 +243,7 @@ func (s *Service) getOriginUpstreamExecute(ctx context.Context, origin string) (
 			origin,
 			origin,
 			requestTime.Format(time.RFC3339),
-			requestTime.Add(18*time.Hour).Format(time.RFC3339),
+			requestTime.Add(3*time.Hour).Format(time.RFC3339),
 			errorMessage,
 		)
 		if err != nil {

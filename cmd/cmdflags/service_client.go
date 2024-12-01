@@ -23,6 +23,10 @@ func (f *ServiceClient) BindFlags(flags *pflag.FlagSet, prefix string) {
 }
 
 func (f *ServiceClient) New() (*ServiceClientValue, error) {
+	if len(f.ServerAddress) == 0 {
+		return nil, fmt.Errorf("missing server address")
+	}
+
 	cc, err := grpc.NewClient(
 		f.ServerAddress,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
