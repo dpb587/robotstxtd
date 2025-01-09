@@ -1,0 +1,15 @@
+name: dev
+on:
+  push:
+    branches:
+    - main
+jobs:
+  exports:
+    name: exports
+    uses: ./.github/workflows/common-exports.yaml
+    permissions:
+      contents: write
+    secrets:
+      CLN_BOT_GITHUB_INTERNALREAD_APP_ID: ${{ secrets.CLN_BOT_GITHUB_INTERNALREAD_APP_ID }}
+      CLN_BOT_GITHUB_INTERNALREAD_PRIVATE_KEY: ${{ secrets.CLN_BOT_GITHUB_INTERNALREAD_PRIVATE_KEY }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}

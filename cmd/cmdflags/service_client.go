@@ -10,7 +10,7 @@ import (
 )
 
 type ServiceClient struct {
-	ServerAddress string
+	ServerAddress string `yaml:"address"`
 }
 
 type ServiceClientValue struct {
