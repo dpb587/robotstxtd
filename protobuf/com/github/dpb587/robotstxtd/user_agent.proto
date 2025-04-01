@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package com.github.dpb587.robotstxtd;
+option go_package = "github.com/dpb587/robotstxtd/robotstxtdpb";
+
+message UserAgent {
+  string identifier = 1;
+  string version = 2;
+  string url = 3;
+  string email = 4;
+}

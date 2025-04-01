@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package com.github.dpb587.robotstxtd;
+option go_package = "github.com/dpb587/robotstxtd/robotstxtdpb";
+
+import "google/protobuf/timestamp.proto";
+import "google/rpc/status.proto";
+
+message File {
+  message Authority {
+    string service_uri = 1;
+    string cache_key = 2;
+  }
+
+  Authority authority = 1;
+
+  message Upstream {
+    string uri = 1;
+    google.protobuf.Timestamp time = 2;
+
+    message Response {
+      uint32 status_code = 1;
+      string headers = 2;
+    }
+
+    oneof result {
+      Response response = 3;
+      google.rpc.Status error = 4;
+    }
+  }
+
+  Upstream upstream = 2;
+
+  message Body {
+    string text = 1;
+    bool truncated = 2;
+  }
+
+  optional Body body = 3;
+}

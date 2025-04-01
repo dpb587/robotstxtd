@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package com.github.dpb587.robotstxtd;
+option go_package = "github.com/dpb587/robotstxtd/robotstxtdpb";
+
+import "com/github/dpb587/robotstxtd/file.proto";
+
+message UriEvaluation {
+  File.Authority authority = 1;
+
+  message Access {
+    message Allow {
+      oneof reason {
+        bool unavailable_status = 1;
+        bool no_rule_match = 2;
+        uint32 rule_match_line = 3;
+      }
+    }
+
+    message Disallow {
+      oneof reason {
+        bool unreachable_status = 1;
+        uint32 rule_match_line = 2;
+      }
+    }
+  }
+
+  oneof access {
+    Access.Allow allow_access = 2;
+    Access.Disallow disallow_access = 3;
+  }
+}

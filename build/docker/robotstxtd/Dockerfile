@@ -1,4 +1,4 @@
-FROM golang:1.23-bullseye AS gobuild
+FROM golang:1.23.4-bullseye AS gobuild
 
 ADD . /mnt/repository/goroot
 WORKDIR /mnt/repository/goroot

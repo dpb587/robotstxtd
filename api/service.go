@@ -1,3 +1,0 @@
-package api
-
-type EvalUrl_Response_Result isEvalUrl_Response_Result

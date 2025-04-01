@@ -2,18 +2,48 @@ package rpccmd
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 
-	"github.com/dpb587/robotstxtd/api"
-	"github.com/dpb587/robotstxtd/cmd/cmdflags"
+	"github.com/dpb587/robotstxtd/cmd/robotstxtdpflag"
 	"github.com/dpb587/robotstxtd/internal"
+	"github.com/dpb587/robotstxtd/robotstxtdpb"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/encoding/prototext"
+	"google.golang.org/protobuf/proto"
 )
 
 func NewCommand() *cobra.Command {
-	var fServiceClient cmdflags.ServiceClient
+	var fServiceClient robotstxtdpflag.CrawlerClient
+	var fOutput string
+
+	doOutput := func(cmd *cobra.Command, msg proto.Message, df func() error) error {
+		switch fOutput {
+		case "", "default":
+			return df()
+		case "protojson":
+			buf, err := protojson.Marshal(msg)
+			if err != nil {
+				return fmt.Errorf("marshal: %v", err)
+			}
+
+			_, err = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", buf)
+
+			return err
+		case "protobuf":
+			buf, err := proto.Marshal(msg)
+			if err != nil {
+				return fmt.Errorf("marshal: %v", err)
+			}
+
+			_, err = cmd.OutOrStdout().Write(buf)
+
+			return err
+		}
+
+		return fmt.Errorf("invalid output format: %s", fOutput)
+	}
 
 	cmd := &cobra.Command{
 		Use: "rpc",
@@ -33,14 +63,16 @@ func NewCommand() *cobra.Command {
 
 				client := serviceClientValue.ServiceClient
 
-				res, err := client.GetBot(cmd.Context(), &api.GetBot_Request{})
+				res, err := client.GetBot(cmd.Context(), &robotstxtdpb.Crawler_GetBot_Request{})
 				if err != nil {
 					return fmt.Errorf("api: get: %v", err)
 				}
 
-				cmd.OutOrStdout().Write([]byte(prototext.Format(res)))
+				return doOutput(cmd, res, func() error {
+					_, err := cmd.OutOrStdout().Write([]byte(prototext.Format(res)))
 
-				return nil
+					return err
+				})
 			},
 		}
 
@@ -48,53 +80,8 @@ func NewCommand() *cobra.Command {
 	}
 
 	{
-		evalUrlCommand := &cobra.Command{
-			Use:  "eval-url",
-			Args: cobra.ExactArgs(1),
-			RunE: func(cmd *cobra.Command, args []string) error {
-				serviceClientValue, err := fServiceClient.New()
-				if err != nil {
-					return err
-				}
-
-				defer serviceClientValue.ConnectionCloser()
-
-				client := serviceClientValue.ServiceClient
-
-				res, err := client.EvalUrl(cmd.Context(), &api.EvalUrl_Request{
-					Url: args[0],
-				})
-				if err != nil {
-					return fmt.Errorf("api: get: %v", err)
-				}
-
-				switch result := res.Result.(type) {
-				case *api.EvalUrl_Response_ResultError_:
-					fmt.Fprintf(os.Stderr, "ERROR: %s\n", result.ResultError.ErrorMessage)
-
-					os.Exit(1)
-				case *api.EvalUrl_Response_ResultDisallow_:
-					if result.ResultDisallow.MatchLineContents != nil {
-						fmt.Fprintf(os.Stderr, "%s\n", *result.ResultDisallow.MatchLineContents)
-					}
-
-					os.Exit(1)
-				case *api.EvalUrl_Response_ResultAllow_:
-					// nop
-				default:
-					return fmt.Errorf("unexpected result: %#+v", result)
-				}
-
-				return nil
-			},
-		}
-
-		cmd.AddCommand(evalUrlCommand)
-	}
-
-	{
-		flushOriginCommand := &cobra.Command{
-			Use:  "flush-origin",
+		getFileCommand := &cobra.Command{
+			Use:  "get-file",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				serviceClientValue, err := fServiceClient.New()
@@ -110,23 +97,70 @@ func NewCommand() *cobra.Command {
 					return fmt.Errorf("validate: invalid origin: %s", args[0])
 				}
 
-				_, err = client.FlushOrigin(cmd.Context(), &api.FlushOrigin_Request{
-					Origin: args[0],
+				res, err := client.GetFile(cmd.Context(), &robotstxtdpb.Crawler_GetFile_Request{
+					ServiceUri: args[0],
+				})
+				if err != nil {
+					return fmt.Errorf("api: get: %v", err)
+				}
+
+				return doOutput(cmd, res, func() error {
+					switch upstreamResult := res.Upstream.Result.(type) {
+					case *robotstxtdpb.File_Upstream_Error:
+						fmt.Fprintf(os.Stderr, "ERROR: %s\n", upstreamResult.Error)
+
+						os.Exit(1)
+					case *robotstxtdpb.File_Upstream_Response_:
+						if res.Body != nil {
+							fmt.Fprintf(os.Stdout, "%s\n", res.Body.Text)
+						}
+					}
+
+					return nil
+				})
+			},
+		}
+
+		cmd.AddCommand(getFileCommand)
+	}
+
+	{
+		invalidateFileCacheCommand := &cobra.Command{
+			Use:  "invalidate-file-cache",
+			Args: cobra.ExactArgs(1),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				serviceClientValue, err := fServiceClient.New()
+				if err != nil {
+					return err
+				}
+
+				defer serviceClientValue.ConnectionCloser()
+
+				client := serviceClientValue.ServiceClient
+
+				if !internal.ValidateCanonicalOrigin(args[0]) {
+					return fmt.Errorf("validate: invalid origin: %s", args[0])
+				}
+
+				res, err := client.InvalidateFileCache(cmd.Context(), &robotstxtdpb.Crawler_InvalidateFileCache_Request{
+					ServiceUri: args[0],
 				})
 				if err != nil {
 					return fmt.Errorf("api: flush: %v", err)
 				}
 
-				return nil
+				return doOutput(cmd, res, func() error {
+					return nil
+				})
 			},
 		}
 
-		cmd.AddCommand(flushOriginCommand)
+		cmd.AddCommand(invalidateFileCacheCommand)
 	}
 
 	{
-		getOriginCommand := &cobra.Command{
-			Use:  "get-origin",
+		evaluateUriCommand := &cobra.Command{
+			Use:  "evaluate-uri",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				serviceClientValue, err := fServiceClient.New()
@@ -138,40 +172,33 @@ func NewCommand() *cobra.Command {
 
 				client := serviceClientValue.ServiceClient
 
-				if !internal.ValidateCanonicalOrigin(args[0]) {
-					return fmt.Errorf("validate: invalid origin: %s", args[0])
-				}
-
-				res, err := client.GetOrigin(cmd.Context(), &api.GetOrigin_Request{
-					Origin: args[0],
+				res, err := client.EvaluateUri(cmd.Context(), &robotstxtdpb.Crawler_EvaluateUri_Request{
+					Uri: args[0],
 				})
 				if err != nil {
 					return fmt.Errorf("api: get: %v", err)
 				}
 
-				if res.ResponseHeaders != nil {
-					fmt.Fprintf(os.Stdout, "HTTP: %d %s\n", res.ResponseStatusCode, http.StatusText(int(res.ResponseStatusCode)))
-					fmt.Fprintf(os.Stdout, "%s\n", *res.ResponseHeaders)
-				}
+				return doOutput(cmd, res, func() error {
+					resStatus, err := res.ToStatusProto()
+					if err != nil {
+						return fmt.Errorf("api: get: %v", err)
+					} else if resStatus.Code() != codes.OK {
+						fmt.Fprintf(os.Stderr, "ERROR: %s\n", resStatus.Message())
 
-				if res.ResponseBody != nil {
-					fmt.Fprintf(os.Stdout, "\n%s\n", *res.ResponseBody)
-				}
+						os.Exit(1)
+					}
 
-				if res.ErrorMessage != nil {
-					fmt.Fprintf(os.Stderr, "ERROR: %s\n", *res.ErrorMessage)
-
-					os.Exit(1)
-				}
-
-				return nil
+					return nil
+				})
 			},
 		}
 
-		cmd.AddCommand(getOriginCommand)
+		cmd.AddCommand(evaluateUriCommand)
 	}
 
 	fServiceClient.BindFlags(cmd.PersistentFlags(), "")
+	cmd.PersistentFlags().StringVarP(&fOutput, "output", "o", "", "output format (default, protojson, protobuf)")
 
 	return cmd
 }

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package com.github.dpb587.robotstxtd;
+option go_package = "github.com/dpb587/robotstxtd/robotstxtdpb";
+
+import "google/protobuf/timestamp.proto";
+import "com/github/dpb587/robotstxtd/file.proto";
+import "com/github/dpb587/robotstxtd/uri_evaluation.proto";
+import "com/github/dpb587/robotstxtd/user_agent.proto";
+
+service Crawler {
+  rpc GetBot(Crawler_GetBot.Request) returns (UserAgent);
+
+  rpc GetFile(Crawler_GetFile.Request) returns (File);
+  rpc InvalidateFileCache(Crawler_InvalidateFileCache.Request) returns (Crawler_InvalidateFileCache.Response);
+
+  rpc EvaluateUri(Crawler_EvaluateUri.Request) returns (UriEvaluation);
+}
+
+message Crawler_GetBot {
+  message Request {}
+}
+
+message Crawler_GetFile {
+  message Request {
+    string service_uri = 1;
+    optional string correlation_key = 2;
+  }
+}
+
+message Crawler_InvalidateFileCache {
+  message Request {
+    string service_uri = 1;
+    optional google.protobuf.Timestamp before_time = 2;
+  }
+
+  message Response {}
+}
+
+message Crawler_EvaluateUri {
+  message Request {
+    string uri = 1;
+  }
+}

@@ -14,10 +14,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dpb587/robotstxtd/api"
-	"github.com/dpb587/robotstxtd/cmd/cmdflags"
+	"github.com/dpb587/robotstxtd/cmd/robotstxtdpflag"
+	"github.com/dpb587/robotstxtd/robotstxtdpb"
 	"github.com/dpb587/robotstxtd/server"
-	"github.com/dpb587/robotstxtd/server/storage"
+	"github.com/dpb587/robotstxtd/server/sqlite3"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/http/httpproxy"
 	"google.golang.org/grpc"
@@ -27,11 +27,11 @@ func NewCommand() *cobra.Command {
 	log := slog.Default()
 
 	var bindAddress string = "127.0.0.1:0"
-	var sqliteDSN string
+	var sqlite3DSN string
 	var httpProxy string
 	var httpsProxy string
 	var caCert string
-	var bot = &cmdflags.Bot{}
+	var bot = &robotstxtdpflag.UserAgent{}
 
 	var (
 		httpClient     *http.Client
@@ -86,6 +86,22 @@ func NewCommand() *cobra.Command {
 					}
 				}
 
+				transport := &http.Transport{
+					Dial: (&net.Dialer{
+						Timeout: 16 * time.Second,
+					}).Dial,
+					DisableKeepAlives:     true,
+					ResponseHeaderTimeout: 8 * time.Second,
+					TLSClientConfig:       tlsConfig,
+					TLSHandshakeTimeout:   16 * time.Second,
+				}
+
+				if proxyFunc != nil {
+					transport.Proxy = func(r *http.Request) (*url.URL, error) {
+						return proxyFunc(r.URL)
+					}
+				}
+
 				return &http.Client{
 					CheckRedirect: func(req *http.Request, via []*http.Request) error {
 						if len(via) >= 5 {
@@ -94,19 +110,8 @@ func NewCommand() *cobra.Command {
 
 						return nil
 					},
-					Timeout: 32 * time.Second,
-					Transport: &http.Transport{
-						Dial: (&net.Dialer{
-							Timeout: 16 * time.Second,
-						}).Dial,
-						DisableKeepAlives: true,
-						Proxy: func(r *http.Request) (*url.URL, error) {
-							return proxyFunc(r.URL)
-						},
-						ResponseHeaderTimeout: 8 * time.Second,
-						TLSClientConfig:       tlsConfig,
-						TLSHandshakeTimeout:   16 * time.Second,
-					},
+					Timeout:   32 * time.Second,
+					Transport: transport,
 				}, nil
 			}()
 		})
@@ -130,7 +135,7 @@ func NewCommand() *cobra.Command {
 			grpcServer := grpc.NewServer()
 
 			{
-				db, err := storage.Open(sqliteDSN)
+				db, err := sqlite3.Open(sqlite3DSN)
 				if err != nil {
 					return fmt.Errorf("open db: %v", err)
 				}
@@ -159,14 +164,14 @@ func NewCommand() *cobra.Command {
 					}
 				}()
 
-				api.RegisterServiceServer(grpcServer, srv)
+				robotstxtdpb.RegisterCrawlerServer(grpcServer, srv)
 			}
 
 			return grpcServer.Serve(lis)
 		},
 	}
 
-	cmd.Flags().StringVar(&sqliteDSN, "sqlite-dsn", sqliteDSN, "")
+	cmd.Flags().StringVar(&sqlite3DSN, "db-sqlite3-dsn", sqlite3DSN, "")
 	cmd.Flags().StringVar(&bindAddress, "bind", bindAddress, "")
 	bot.BindFlags(cmd.Flags(), "bot-")
 	cmd.Flags().StringVar(&httpProxy, "http-proxy", httpProxy, "")
