@@ -19,4 +19,3 @@ CREATE TABLE IF NOT EXISTS cache2 (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_cache2_service_uri ON cache2 (service_uri) WHERE invalidate_time IS NULL;
-

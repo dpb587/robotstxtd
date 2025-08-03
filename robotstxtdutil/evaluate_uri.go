@@ -2,6 +2,7 @@ package robotstxtdutil
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/dpb587/robotstxtd/robotstxtdpb"
 	"github.com/jimsmart/grobotstxt"
@@ -25,12 +26,22 @@ func EvaluateUri(r *robotstxtdpb.File, userAgentIdentifier, url string) *robotst
 		return result
 	case *robotstxtdpb.File_Upstream_Response_:
 		if upstreamResult.Response.StatusCode >= 400 && upstreamResult.Response.StatusCode < 500 {
-			result.Access = &robotstxtdpb.UriEvaluation_AllowAccess{
-				AllowAccess: &robotstxtdpb.UriEvaluation_Access_Allow{
-					Reason: &robotstxtdpb.UriEvaluation_Access_Allow_UnavailableStatus{
-						UnavailableStatus: true,
+			if upstreamResult.Response.StatusCode == http.StatusTooManyRequests {
+				result.Access = &robotstxtdpb.UriEvaluation_DisallowAccess{
+					DisallowAccess: &robotstxtdpb.UriEvaluation_Access_Disallow{
+						Reason: &robotstxtdpb.UriEvaluation_Access_Disallow_UnreachableStatus{
+							UnreachableStatus: true,
+						},
 					},
-				},
+				}
+			} else {
+				result.Access = &robotstxtdpb.UriEvaluation_AllowAccess{
+					AllowAccess: &robotstxtdpb.UriEvaluation_Access_Allow{
+						Reason: &robotstxtdpb.UriEvaluation_Access_Allow_UnavailableStatus{
+							UnavailableStatus: true,
+						},
+					},
+				}
 			}
 
 			return result
