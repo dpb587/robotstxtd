@@ -34,7 +34,7 @@ func (robotstxtEval *UriEvaluation) ToStatusProto() (*status.Status, error) {
 			panic(fmt.Errorf("robotstxtdpb: unexpected disallow reason: %T", reason))
 		}
 
-		return status.New(codes.Aborted, "robots.txt - Not Allowed").WithDetails(errorInfo)
+		return status.New(codes.FailedPrecondition, "robots.txt - Not Allowed").WithDetails(errorInfo)
 	}
 
 	return nil, fmt.Errorf("robotstxtdpb: unexpected result type: %T", robotstxtEval.Access)
