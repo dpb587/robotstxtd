@@ -31,7 +31,7 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 		sRequestTime           string
 		sErrorCode             sql.NullInt32
 		sErrorMessage          sql.NullString
-		sResponseStatusCode    uint32
+		sResponseStatusCode    sql.NullInt32
 		sResponseHeaders       sql.NullString
 		sResponseBodyText      sql.NullString
 		sResponseBodyTruncated sql.NullInt32
@@ -97,7 +97,7 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 	} else {
 		res.Upstream.Result = &robotstxtdpb.File_Upstream_Response_{
 			Response: &robotstxtdpb.File_Upstream_Response{
-				StatusCode: sResponseStatusCode,
+				StatusCode: uint32(sResponseStatusCode.Int32),
 				Headers:    sResponseHeaders.String,
 			},
 		}
@@ -194,6 +194,12 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 			nil,
 		)
 		if err != nil {
+			s.log.Error(
+				"build request failed",
+				"service", serviceUri,
+				"error", err,
+			)
+
 			return nil, &statuspb.Status{
 				Code:    int32(codes.InvalidArgument),
 				Message: "invalid argument",
@@ -204,6 +210,12 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 
 		res, err := s.client.Do(req)
 		if err != nil {
+			s.log.Error(
+				"fetch failed",
+				"service", serviceUri,
+				"error", err,
+			)
+
 			return nil, &statuspb.Status{
 				Code:    int32(codes.Unavailable),
 				Message: "service unavailable",
@@ -215,6 +227,12 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 		resHeadersBuffer := &bytes.Buffer{}
 		err = res.Header.Write(resHeadersBuffer)
 		if err != nil {
+			s.log.Error(
+				"write response headers failed",
+				"service", serviceUri,
+				"error", err,
+			)
+
 			return nil, &statuspb.Status{
 				Code:    int32(codes.Internal),
 				Message: "internal error",
@@ -231,6 +249,12 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 
 			resBody, err := io.ReadAll(io.TeeReader(io.LimitReader(res.Body, maxBodySize+1), resBodySha256))
 			if err != nil {
+				s.log.Error(
+					"read response body failed",
+					"service", serviceUri,
+					"error", err,
+				)
+
 				return nil, &statuspb.Status{
 					Code:    int32(codes.Unavailable),
 					Message: "service unavailable",
@@ -286,6 +310,12 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 			resBodyTruncated,
 		)
 		if err != nil {
+			s.log.Error(
+				"store response failed",
+				"service", serviceUri,
+				"error", err,
+			)
+
 			return nil, &statuspb.Status{
 				Code:    int32(codes.Internal),
 				Message: "internal error",

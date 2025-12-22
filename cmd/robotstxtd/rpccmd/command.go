@@ -81,7 +81,7 @@ func NewCommand() *cobra.Command {
 
 	{
 		getFileCommand := &cobra.Command{
-			Use:  "get-file",
+			Use:  "get-file ORIGIN",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				serviceClientValue, err := fServiceClient.New()
@@ -126,7 +126,7 @@ func NewCommand() *cobra.Command {
 
 	{
 		invalidateFileCacheCommand := &cobra.Command{
-			Use:  "invalidate-file-cache",
+			Use:  "invalidate-file-cache ORIGIN",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				serviceClientValue, err := fServiceClient.New()
@@ -160,7 +160,7 @@ func NewCommand() *cobra.Command {
 
 	{
 		evaluateUriCommand := &cobra.Command{
-			Use:  "evaluate-uri",
+			Use:  "evaluate-uri ORIGIN",
 			Args: cobra.ExactArgs(1),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				serviceClientValue, err := fServiceClient.New()

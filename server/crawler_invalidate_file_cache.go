@@ -22,10 +22,13 @@ func (s *Service) InvalidateFileCache(ctx context.Context, req *robotstxtdpb.Cra
 
 	_, err := s.db.Exec(
 		`
-			UPDATE cache
-			SET invalidated = 1
-			WHERE origin = ? AND lookup_time < ?;
+			UPDATE cache2
+			SET invalidate_time = ?
+			WHERE
+				service_uri = ?
+				AND request_time < ?
 		`,
+		time.Now().Format(time.RFC3339),
 		req.ServiceUri,
 		lookupTime.AsTime().Format(time.RFC3339),
 	)
