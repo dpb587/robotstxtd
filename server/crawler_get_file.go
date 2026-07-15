@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -49,7 +50,10 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 				response_body_text,
 				response_body_truncated
 			FROM cache2
-			WHERE service_uri = ? AND invalidate_time IS NULL AND stale_time > ?
+			WHERE
+				service_uri = ?
+				AND invalidate_time IS NULL
+				AND stale_time > ?
 		`,
 		serviceUri,
 		time.Now().Format(time.RFC3339),
@@ -75,6 +79,8 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("lookup time: %v", err)
 	}
+
+	fmt.Fprintf(os.Stderr, "> %s\n", sCacheKey)
 
 	res := &robotstxtdpb.File{
 		Authority: &robotstxtdpb.File_Authority{
@@ -134,38 +140,25 @@ func (s *Service) getFileUpstream(serviceUri string) (*robotstxtdpb.File, error)
 
 func (s *Service) queueGetFileUpstreamWorker() {
 	memo := make(map[string]*queueGetFileUpstreamExecution)
-	prune := time.NewTicker(time.Minute)
 
-	for {
-		select {
-		case req, ok := <-s.getFileUpstreamTaskRequests:
-			if !ok {
-				return
+	for req := range s.getFileUpstreamTaskRequests {
+		e := memo[req.serviceUri]
+		if e == nil {
+			e = &queueGetFileUpstreamExecution{
+				res:    queueGetFileUpstreamResult{},
+				waiter: make(chan struct{}),
 			}
 
-			e := memo[req.serviceUri]
-			if e == nil {
-				e = &queueGetFileUpstreamExecution{
-					res:    queueGetFileUpstreamResult{},
-					waiter: make(chan struct{}),
-				}
+			memo[req.serviceUri] = e
 
-				memo[req.serviceUri] = e
-
-				go func() {
-					e.res.res, e.res.err = s.queueGetFileUpstreamExecute(context.TODO(), req.serviceUri)
-					close(e.waiter)
-				}()
-			}
-
-			go e.wait(req.result)
-		case <-prune.C:
-			for k, e := range memo {
-				if e.waiter == nil {
-					delete(memo, k)
-				}
-			}
+			go func() {
+				e.res.res, e.res.err = s.queueGetFileUpstreamExecute(context.TODO(), req.serviceUri)
+				close(e.waiter)
+				delete(memo, req.serviceUri)
+			}()
 		}
+
+		go e.wait(req.result)
 	}
 }
 

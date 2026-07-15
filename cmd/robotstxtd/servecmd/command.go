@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	httpcachedclient "github.com/dpb587/httpcached/client"
 	"github.com/dpb587/robotstxtd/cmd/robotstxtdpflag"
 	"github.com/dpb587/robotstxtd/robotstxtdpb"
 	"github.com/dpb587/robotstxtd/server"
@@ -31,6 +32,8 @@ func NewCommand() *cobra.Command {
 	var httpProxy string
 	var httpsProxy string
 	var caCert string
+	var httpcachedServer string
+	var httpcachedTier string
 	var bot = &robotstxtdpflag.UserAgent{}
 
 	var (
@@ -42,6 +45,43 @@ func NewCommand() *cobra.Command {
 	httpClientFactory := func() (*http.Client, error) {
 		httpClientOnce.Do(func() {
 			httpClient, httpClientErr = func() (*http.Client, error) {
+				if len(httpcachedServer) > 0 {
+					serverURL, err := url.Parse(httpcachedServer)
+					if err != nil {
+						return nil, fmt.Errorf("httpcached-server: parse: %v", err)
+					}
+
+					serverTransport := &http.Transport{
+						DialContext: (&net.Dialer{
+							Timeout:   16 * time.Second,
+							KeepAlive: 8 * time.Second,
+						}).DialContext,
+						DisableCompression:    true,
+						MaxConnsPerHost:       32,
+						MaxIdleConns:          64,
+						IdleConnTimeout:       90 * time.Second,
+						TLSHandshakeTimeout:   10 * time.Second,
+						ExpectContinueTimeout: 1 * time.Second,
+					}
+
+					blobTransport := &http.Transport{
+						DialContext: (&net.Dialer{
+							Timeout:   16 * time.Second,
+							KeepAlive: 8 * time.Second,
+						}).DialContext,
+						DisableCompression:    true,
+						MaxConnsPerHost:       32,
+						MaxIdleConns:          64,
+						IdleConnTimeout:       90 * time.Second,
+						TLSHandshakeTimeout:   10 * time.Second,
+						ExpectContinueTimeout: 1 * time.Second,
+					}
+
+					return &http.Client{
+						Transport: httpcachedclient.NewService(log, serverTransport, serverURL, blobTransport, httpcachedTier),
+					}, nil
+				}
+
 				var proxyFunc func(*url.URL) (*url.URL, error)
 
 				if len(httpProxy) > 0 || len(httpsProxy) > 0 {
@@ -177,6 +217,8 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&httpProxy, "http-proxy", httpProxy, "")
 	cmd.Flags().StringVar(&httpsProxy, "https-proxy", httpsProxy, "")
 	cmd.Flags().StringVar(&caCert, "ca-cert", caCert, "")
+	cmd.Flags().StringVar(&httpcachedServer, "httpcached-server", httpcachedServer, "")
+	cmd.Flags().StringVar(&httpcachedTier, "httpcached-tier", httpcachedTier, "")
 
 	return cmd
 }

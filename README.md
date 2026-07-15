@@ -21,8 +21,8 @@ go run ./cmd/robotstxtd serve \
 Client
 
 ```
-go run ./cmd/robotstxtd rpc evaluate-uri \
-  --server 127.0.0.1:9078 \
+go run ./cmd/robotstxtd rpc --server 127.0.0.1:9078 \
+  evaluate-uri \
   'https://geolocation.onetrust.com/cookieconsentpub/v1/geo/location/dnsfeed'
 ```
 
