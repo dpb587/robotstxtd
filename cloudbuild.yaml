@@ -1,0 +1,20 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    env:
+      - DOCKER_BUILDKIT=1
+    args:
+      - build
+      - -f
+      - build/robotstxtd/Dockerfile
+      - -t
+      - us-central1-docker.pkg.dev/master-scanner-387914/curiolane-robotstxtd/robotstxtd:$_VERSION
+      - .
+
+images:
+  - us-central1-docker.pkg.dev/master-scanner-387914/curiolane-robotstxtd/robotstxtd:$_VERSION
+
+substitutions:
+  _VERSION: ''
+
+options:
+  logging: CLOUD_LOGGING_ONLY
