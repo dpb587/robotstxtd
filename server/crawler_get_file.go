@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -79,8 +78,6 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 	if err != nil {
 		return nil, fmt.Errorf("lookup time: %v", err)
 	}
-
-	fmt.Fprintf(os.Stderr, "> %s\n", sCacheKey)
 
 	res := &robotstxtdpb.File{
 		Authority: &robotstxtdpb.File_Authority{

@@ -1,7 +1,9 @@
 package robotstxtdpflag
 
 import (
+	"context"
 	"fmt"
+	"net"
 
 	"github.com/dpb587/robotstxtd/robotstxtdpb"
 	"github.com/spf13/pflag"
@@ -11,6 +13,12 @@ import (
 
 type CrawlerClient struct {
 	ServerAddress string `yaml:"address"`
+
+	// Dialer optionally overrides how the connection to ServerAddress is
+	// established (e.g. to resolve the address through a service discovery
+	// mechanism other than DNS). When set, grpc's own name resolution is
+	// bypassed since ServerAddress is only used as an opaque target label.
+	Dialer func(ctx context.Context, network, addr string) (net.Conn, error) `yaml:"-"`
 }
 
 type ServiceClientValue struct {
@@ -27,10 +35,20 @@ func (f *CrawlerClient) New() (*ServiceClientValue, error) {
 		return nil, fmt.Errorf("missing server address")
 	}
 
-	cc, err := grpc.NewClient(
-		f.ServerAddress,
+	target := f.ServerAddress
+
+	dialOpts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
+	}
+
+	if f.Dialer != nil {
+		target = "passthrough:///" + target
+		dialOpts = append(dialOpts, grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
+			return f.Dialer(ctx, "tcp", addr)
+		}))
+	}
+
+	cc, err := grpc.NewClient(target, dialOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("new client: %v", err)
 	}
