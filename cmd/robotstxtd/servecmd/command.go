@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	httpcachedclient "github.com/dpb587/httpcached/client"
+	"github.com/dpb587/httpcached/client/configset"
 	"github.com/dpb587/robotstxtd/cmd/robotstxtdpflag"
 	"github.com/dpb587/robotstxtd/robotstxtdpb"
 	"github.com/dpb587/robotstxtd/server"
@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/net/http/httpproxy"
 	"google.golang.org/grpc"
+	"private.curiolane.dev/shared/consuldiscovery"
 )
 
 func NewCommand() *cobra.Command {
@@ -34,7 +35,14 @@ func NewCommand() *cobra.Command {
 	var caCert string
 	var httpcachedServer string
 	var httpcachedTier string
+	var consulAddress string
+	var consulScheme string
+	var consulDatacenter string
+	var consulToken string
+	var consulRefreshInterval = consuldiscovery.DefaultRefreshInterval
 	var bot = &robotstxtdpflag.UserAgent{}
+
+	var consulWatchers []*consuldiscovery.Watcher
 
 	var (
 		httpClient     *http.Client
@@ -46,39 +54,41 @@ func NewCommand() *cobra.Command {
 		httpClientOnce.Do(func() {
 			httpClient, httpClientErr = func() (*http.Client, error) {
 				if len(httpcachedServer) > 0 {
-					serverURL, err := url.Parse(httpcachedServer)
+					var consulSvc *consuldiscovery.Service
+
+					if len(consulAddress) > 0 {
+						var err error
+
+						consulSvc, err = consuldiscovery.NewService(consuldiscovery.Config{
+							Address:         consulAddress,
+							Scheme:          consulScheme,
+							Datacenter:      consulDatacenter,
+							Token:           consulToken,
+							RefreshInterval: consulRefreshInterval,
+						})
+						if err != nil {
+							return nil, fmt.Errorf("consul service discovery: %v", err)
+						}
+					}
+
+					dialer, err := consuldiscovery.NewDialer(consulSvc, log, consulRefreshInterval, httpcachedServer, &consulWatchers)
 					if err != nil {
-						return nil, fmt.Errorf("httpcached-server: parse: %v", err)
+						return nil, fmt.Errorf("httpcached-server: %v", err)
 					}
 
-					serverTransport := &http.Transport{
-						DialContext: (&net.Dialer{
-							Timeout:   16 * time.Second,
-							KeepAlive: 8 * time.Second,
-						}).DialContext,
-						DisableCompression:    true,
-						MaxConnsPerHost:       32,
-						MaxIdleConns:          64,
-						IdleConnTimeout:       90 * time.Second,
-						TLSHandshakeTimeout:   10 * time.Second,
-						ExpectContinueTimeout: 1 * time.Second,
+					httpcachedClient := &configset.Client{
+						Tier:   httpcachedTier,
+						Server: httpcachedServer,
+						Dialer: dialer,
 					}
 
-					blobTransport := &http.Transport{
-						DialContext: (&net.Dialer{
-							Timeout:   16 * time.Second,
-							KeepAlive: 8 * time.Second,
-						}).DialContext,
-						DisableCompression:    true,
-						MaxConnsPerHost:       32,
-						MaxIdleConns:          64,
-						IdleConnTimeout:       90 * time.Second,
-						TLSHandshakeTimeout:   10 * time.Second,
-						ExpectContinueTimeout: 1 * time.Second,
+					service, err := httpcachedClient.New(log)
+					if err != nil {
+						return nil, fmt.Errorf("httpcached-server: %v", err)
 					}
 
 					return &http.Client{
-						Transport: httpcachedclient.NewService(log, serverTransport, serverURL, blobTransport, httpcachedTier),
+						Transport: service,
 					}, nil
 				}
 
@@ -172,6 +182,12 @@ func NewCommand() *cobra.Command {
 				"bind", lis.Addr().String(),
 			)
 
+			defer func() {
+				for _, w := range consulWatchers {
+					w.Close()
+				}
+			}()
+
 			grpcServer := grpc.NewServer()
 
 			{
@@ -219,6 +235,11 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&caCert, "ca-cert", caCert, "")
 	cmd.Flags().StringVar(&httpcachedServer, "httpcached-server", httpcachedServer, "")
 	cmd.Flags().StringVar(&httpcachedTier, "httpcached-tier", httpcachedTier, "")
+	cmd.Flags().StringVar(&consulAddress, "consul-address", consulAddress, "")
+	cmd.Flags().StringVar(&consulScheme, "consul-scheme", consulScheme, "")
+	cmd.Flags().StringVar(&consulDatacenter, "consul-datacenter", consulDatacenter, "")
+	cmd.Flags().StringVar(&consulToken, "consul-token", consulToken, "")
+	cmd.Flags().DurationVar(&consulRefreshInterval, "consul-refresh-interval", consulRefreshInterval, "")
 
 	return cmd
 }
