@@ -10,9 +10,9 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	golang.org/x/net v0.56.0
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240604185151-ef581f913117
-	google.golang.org/grpc v1.65.0
-	google.golang.org/protobuf v1.36.8
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478
+	google.golang.org/grpc v1.82.0
+	google.golang.org/protobuf v1.36.11
 	private.curiolane.dev/shared/consuldiscovery v0.0.0-00010101000000-000000000000
 )
 

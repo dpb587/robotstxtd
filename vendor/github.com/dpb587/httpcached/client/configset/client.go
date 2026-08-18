@@ -49,7 +49,10 @@ func (csc *Client) New(log *slog.Logger) (*client.Service, error) {
 		},
 		serverURL,
 		&http.Transport{
-			DialContext:           dialContext,
+			DialContext: (&net.Dialer{
+				Timeout:   16 * time.Second,
+				KeepAlive: 8 * time.Second,
+			}).DialContext,
 			DisableCompression:    true,
 			MaxConnsPerHost:       32,
 			MaxIdleConns:          64,

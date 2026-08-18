@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -129,11 +130,16 @@ func (c *seaweedClient) getFreshLocations(masterHost, volumeId, collectionHint s
 	lookupResponse, err := c.blobTransport.RoundTrip(lookupRequest)
 	if err != nil {
 		return nil, fmt.Errorf("get: %v", err)
-	} else if lookupResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", lookupResponse.StatusCode)
 	}
 
 	defer lookupResponse.Body.Close()
+
+	if lookupResponse.StatusCode != http.StatusOK {
+		// added to investigate: `proxyrpc: failed to get blob","error":"create request: get locations: unexpected status code: 400`
+		buf, _ := io.ReadAll(io.LimitReader(lookupResponse.Body, 1024))
+
+		return nil, fmt.Errorf("unexpected status code: %d, body: %s", lookupResponse.StatusCode, base64.StdEncoding.EncodeToString(buf))
+	}
 
 	var lookupResponseData struct {
 		Locations []struct {

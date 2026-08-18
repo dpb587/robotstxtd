@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2021 gRPC authors.
+ * Copyright 2024 gRPC authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,11 @@
  *
  */
 
-package grpcutil
+// Package internal contains functionality internal to the grpclog package.
+package internal
 
-import "regexp"
+// LoggerV2Impl is the logger used for the non-depth log functions.
+var LoggerV2Impl LoggerV2
 
-// FullMatchWithRegex returns whether the full text matches the regex provided.
-func FullMatchWithRegex(re *regexp.Regexp, text string) bool {
-	if len(text) == 0 {
-		return re.MatchString(text)
-	}
-	re.Longest()
-	rem := re.FindString(text)
-	return len(rem) == len(text)
-}
+// DepthLoggerV2Impl is the logger used for the depth log functions.
+var DepthLoggerV2Impl DepthLoggerV2

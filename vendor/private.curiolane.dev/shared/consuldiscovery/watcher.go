@@ -24,9 +24,12 @@ type Watcher struct {
 	serviceName string
 	log         *slog.Logger
 
-	mu        sync.Mutex
-	instances []instance
-	next      uint64
+	mu          sync.Mutex
+	instances   []instance
+	noInstances bool
+	next        uint64
+	subscribers map[int]func()
+	nextSubID   int
 
 	stopCh chan struct{}
 	wg     sync.WaitGroup
@@ -92,10 +95,60 @@ func (w *Watcher) refresh() {
 
 	w.mu.Lock()
 	w.instances = instances
+	writeLog := (len(instances) == 0 && !w.noInstances) || (len(instances) > 0 && w.noInstances)
+	w.noInstances = len(instances) == 0
+	subscribers := make([]func(), 0, len(w.subscribers))
+	for _, fn := range w.subscribers {
+		subscribers = append(subscribers, fn)
+	}
 	w.mu.Unlock()
 
-	if len(instances) == 0 {
-		w.log.Warn("consul service has no healthy instances", "service", w.serviceName)
+	if writeLog {
+		if len(instances) == 0 {
+			w.log.Warn("consul service has no healthy instances", "service", w.serviceName)
+		} else {
+			w.log.Info("consul service has healthy instances", "service", w.serviceName)
+		}
+	}
+
+	for _, fn := range subscribers {
+		fn()
+	}
+}
+
+// Addresses returns "host:port" for every healthy instance known as of the
+// most recent refresh, in the current randomized round-robin order.
+func (w *Watcher) Addresses() []string {
+	w.mu.Lock()
+	instances := w.instances
+	w.mu.Unlock()
+
+	addrs := make([]string, len(instances))
+	for i, inst := range instances {
+		addrs[i] = net.JoinHostPort(inst.address, strconv.Itoa(inst.port))
+	}
+
+	return addrs
+}
+
+// subscribe registers fn to be called (with no arguments) after every
+// refresh, including refreshes that leave the instance set unchanged. The
+// returned unsubscribe function removes fn; it is safe to call more than
+// once.
+func (w *Watcher) subscribe(fn func()) (unsubscribe func()) {
+	w.mu.Lock()
+	if w.subscribers == nil {
+		w.subscribers = make(map[int]func())
+	}
+	id := w.nextSubID
+	w.nextSubID++
+	w.subscribers[id] = fn
+	w.mu.Unlock()
+
+	return func() {
+		w.mu.Lock()
+		delete(w.subscribers, id)
+		w.mu.Unlock()
 	}
 }
 
