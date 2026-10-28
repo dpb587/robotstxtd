@@ -14,7 +14,6 @@ import (
 
 	"github.com/dpb587/robotstxtd/internal"
 	"github.com/dpb587/robotstxtd/robotstxtdpb"
-	"github.com/google/uuid"
 	statuspb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,7 +26,7 @@ func (s *Service) GetFile(ctx context.Context, req *robotstxtdpb.Crawler_GetFile
 
 func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 	var (
-		sCacheKey              string
+		sGeneration            string
 		sRequestTime           string
 		sErrorCode             sql.NullInt32
 		sErrorMessage          sql.NullString
@@ -40,7 +39,7 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 	err := s.db.QueryRow(
 		`
 			SELECT
-				cache_key,
+				generation,
 				request_time,
 				error_code,
 				error_message,
@@ -48,7 +47,7 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 				response_headers,
 				response_body_text,
 				response_body_truncated
-			FROM cache2
+			FROM cache
 			WHERE
 				service_uri = ?
 				AND invalidate_time IS NULL
@@ -57,7 +56,7 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 		serviceUri,
 		time.Now().Format(time.RFC3339),
 	).Scan(
-		&sCacheKey,
+		&sGeneration,
 		&sRequestTime,
 		&sErrorCode,
 		&sErrorMessage,
@@ -82,7 +81,7 @@ func (s *Service) getFile(serviceUri string) (*robotstxtdpb.File, error) {
 	res := &robotstxtdpb.File{
 		Authority: &robotstxtdpb.File_Authority{
 			ServiceUri: serviceUri,
-			CacheKey:   sCacheKey,
+			Generation: sGeneration,
 		},
 		Upstream: &robotstxtdpb.File_Upstream{
 			Uri:  fmt.Sprintf("%s/robots.txt", serviceUri),
@@ -123,55 +122,24 @@ func (s *Service) getFileUpstream(serviceUri string) (*robotstxtdpb.File, error)
 		return nil, status.Error(codes.InvalidArgument, "invalid service uri")
 	}
 
-	rc := make(chan queueGetFileUpstreamResult, 1)
-
-	s.getFileUpstreamTaskRequests <- queueGetFileUpstreamRequest{
-		serviceUri: serviceUri,
-		result:     rc,
+	v, err, _ := s.getFileGroup.Do(serviceUri, func() (any, error) {
+		return s.fetchFile(context.TODO(), serviceUri)
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	result := <-rc
-
-	return result.res, result.err
+	return v.(*robotstxtdpb.File), nil
 }
 
-func (s *Service) queueGetFileUpstreamWorker() {
-	memo := make(map[string]*queueGetFileUpstreamExecution)
-
-	for req := range s.getFileUpstreamTaskRequests {
-		e := memo[req.serviceUri]
-		if e == nil {
-			e = &queueGetFileUpstreamExecution{
-				res:    queueGetFileUpstreamResult{},
-				waiter: make(chan struct{}),
-			}
-
-			memo[req.serviceUri] = e
-
-			go func() {
-				e.res.res, e.res.err = s.queueGetFileUpstreamExecute(context.TODO(), req.serviceUri)
-				close(e.waiter)
-				delete(memo, req.serviceUri)
-			}()
-		}
-
-		go e.wait(req.result)
-	}
-}
-
-func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri string) (*robotstxtdpb.File, error) {
+func (s *Service) fetchFile(ctx context.Context, serviceUri string) (*robotstxtdpb.File, error) {
 	s.log.Info(
 		"fetch upstream",
 		"service", serviceUri,
 	)
 
 	requestTime := time.Now()
-	cacheKeyUUID, err := uuid.NewV7()
-	if err != nil {
-		return nil, fmt.Errorf("generate cache key: %v", err)
-	}
-
-	cacheKey := cacheKeyUUID.String()
+	generation := nextGeneration()
 
 	res, errStatus := func() (*robotstxtdpb.File, *statuspb.Status) {
 		dctx, cancel := context.WithDeadline(ctx, requestTime.Add(s.clientTimeout))
@@ -263,7 +231,7 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 		resProto := &robotstxtdpb.File{
 			Authority: &robotstxtdpb.File_Authority{
 				ServiceUri: serviceUri,
-				CacheKey:   cacheKey,
+				Generation: generation,
 			},
 			Upstream: &robotstxtdpb.File_Upstream{
 				Uri:  fmt.Sprintf("%s/robots.txt", serviceUri),
@@ -283,15 +251,15 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 
 		_, err = s.db.Exec(
 			`
-				UPDATE cache2 SET invalidate_time = ? WHERE service_uri = ?;
-				INSERT INTO cache2 (service_uri, cache_key, request_time, stale_time, response_status_code, response_headers, response_body_text, response_body_truncated) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+				UPDATE cache SET invalidate_time = ? WHERE service_uri = ?;
+				INSERT INTO cache (service_uri, generation, request_time, stale_time, response_status_code, response_headers, response_body_text, response_body_truncated) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 			`,
 			// update
 			time.Now().Format(time.RFC3339),
 			serviceUri,
 			// insert
 			serviceUri,
-			cacheKey,
+			generation,
 			requestTime.Format(time.RFC3339),
 			requestTime.Add(24*time.Hour).Format(time.RFC3339),
 			uint32(res.StatusCode),
@@ -323,15 +291,15 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 
 		_, err := s.db.Exec(
 			`
-				UPDATE cache2 SET invalidate_time = ? WHERE service_uri = ?;
-				INSERT INTO cache2 (service_uri, cache_key, request_time, stale_time, error_code, error_message) VALUES (?, ?, ?, ?, ?, ?);
+				UPDATE cache SET invalidate_time = ? WHERE service_uri = ?;
+				INSERT INTO cache (service_uri, generation, request_time, stale_time, error_code, error_message) VALUES (?, ?, ?, ?, ?, ?);
 			`,
 			// update
-			serviceUri,
 			time.Now().Format(time.RFC3339),
+			serviceUri,
 			// insert
 			serviceUri,
-			cacheKey,
+			generation,
 			requestTime.Format(time.RFC3339),
 			requestTime.Add(3*time.Hour).Format(time.RFC3339),
 			errStatus.Code,
@@ -344,7 +312,7 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 		res = &robotstxtdpb.File{
 			Authority: &robotstxtdpb.File_Authority{
 				ServiceUri: serviceUri,
-				CacheKey:   cacheKey,
+				Generation: generation,
 			},
 			Upstream: &robotstxtdpb.File_Upstream{
 				Uri:  fmt.Sprintf("%s/robots.txt", serviceUri),
@@ -357,24 +325,4 @@ func (s *Service) queueGetFileUpstreamExecute(ctx context.Context, serviceUri st
 	}
 
 	return res, nil
-}
-
-type queueGetFileUpstreamRequest struct {
-	serviceUri string
-	result     chan<- queueGetFileUpstreamResult
-}
-
-type queueGetFileUpstreamResult struct {
-	res *robotstxtdpb.File
-	err error
-}
-
-type queueGetFileUpstreamExecution struct {
-	res    queueGetFileUpstreamResult
-	waiter chan struct{}
-}
-
-func (m *queueGetFileUpstreamExecution) wait(out chan<- queueGetFileUpstreamResult) {
-	<-m.waiter
-	out <- m.res
 }

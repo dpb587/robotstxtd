@@ -1,0 +1,35 @@
+{{define "content"}}
+<article class="max-w-3xl">
+  <p class="text-xs uppercase tracking-wide text-stone-500">Origin</p>
+  <h1 class="mt-1 break-all font-mono text-base font-semibold">{{.Detail.ServiceURI}}</h1>
+  <dl class="mt-6 grid gap-4 text-sm sm:grid-cols-2">
+    <div>
+      <dt class="text-stone-500">Generation</dt>
+      <dd class="mt-1 font-mono text-xs">{{.Detail.Generation}}</dd>
+    </div>
+    <div>
+      <dt class="text-stone-500">Requested</dt>
+      <dd class="mt-1">{{.Detail.Requested}}</dd>
+    </div>
+    <div>
+      <dt class="text-stone-500">Upstream</dt>
+      <dd class="mt-1 break-all font-mono text-xs">{{.Detail.URI}}</dd>
+    </div>
+    <div>
+      <dt class="text-stone-500">Status</dt>
+      <dd class="mt-1 {{.Detail.StatusClass}}">{{.Detail.Status}}</dd>
+    </div>
+  </dl>
+  {{if not .Detail.Failed}}
+  <h2 class="mt-8 text-sm font-semibold">Headers</h2>
+  <pre class="mt-2 overflow-auto rounded-md bg-stone-950 p-4 text-xs leading-5 text-stone-100">{{.Detail.Headers}}</pre>
+  <h2 class="mt-8 text-sm font-semibold">Body{{if .Detail.Truncated}} <span class="font-normal text-stone-500">(truncated)</span>{{end}}</h2>
+  <pre class="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md bg-stone-950 p-4 text-xs leading-5 text-stone-100">{{.Detail.Body}}</pre>
+  {{end}}
+  <form class="mt-8" hx-post="/file/invalidate" hx-target="#invalidate-result" hx-swap="innerHTML">
+    <input type="hidden" name="service_uri" value="{{.Detail.ServiceURI}}">
+    <button class="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-800 hover:bg-stone-50" type="submit">Invalidate</button>
+  </form>
+  <div id="invalidate-result" class="mt-3"></div>
+</article>
+{{end}}
