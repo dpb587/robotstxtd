@@ -1,0 +1,35 @@
+{{define "content"}}
+<section>
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="text-lg font-semibold tracking-tight">Files</h1>
+      <p class="mt-1 text-sm text-stone-600">Cached robots.txt responses, newest generation first.</p>
+    </div>
+    <form class="flex items-center gap-3 text-sm" method="get" action="/files">
+      <input type="hidden" name="page_size" value="{{.PageSize}}">
+      <label class="flex items-center gap-2 text-stone-700">
+        <input class="accent-emerald-800" type="checkbox" name="include_invalidated" value="1" {{if .IncludeInvalidated}}checked{{end}}>
+        Include invalidated
+      </label>
+      <button class="rounded-md bg-emerald-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-900" type="submit">Apply</button>
+    </form>
+  </div>
+  <div class="mt-6 overflow-x-auto">
+    <table class="w-full border-collapse text-left text-sm">
+      <thead class="text-xs uppercase tracking-wide text-stone-500">
+        <tr>
+          <th class="py-2 pr-4 font-medium">Origin</th>
+          <th class="py-2 pr-4 font-medium">Generation</th>
+          <th class="py-2 pr-4 font-medium">Requested</th>
+          <th class="py-2 pr-4 font-medium">Stale</th>
+          <th class="py-2 pr-4 font-medium">Status</th>
+          <th class="py-2 font-medium">Invalidated</th>
+        </tr>
+      </thead>
+      <tbody id="file-rows">
+        {{template "file-rows" .}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}

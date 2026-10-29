@@ -86,7 +86,7 @@ func (x *File) GetBody() *File_Body {
 type File_Authority struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ServiceUri    string                 `protobuf:"bytes,1,opt,name=service_uri,json=serviceUri,proto3" json:"service_uri,omitempty"`
-	CacheKey      string                 `protobuf:"bytes,2,opt,name=cache_key,json=cacheKey,proto3" json:"cache_key,omitempty"`
+	Generation    string                 `protobuf:"bytes,2,opt,name=generation,proto3" json:"generation,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -128,9 +128,9 @@ func (x *File_Authority) GetServiceUri() string {
 	return ""
 }
 
-func (x *File_Authority) GetCacheKey() string {
+func (x *File_Authority) GetGeneration() string {
 	if x != nil {
-		return x.CacheKey
+		return x.Generation
 	}
 	return ""
 }
@@ -341,15 +341,17 @@ var File_com_github_dpb587_robotstxtd_file_proto protoreflect.FileDescriptor
 
 const file_com_github_dpb587_robotstxtd_file_proto_rawDesc = "" +
 	"\n" +
-	"'com/github/dpb587/robotstxtd/file.proto\x12\x1ccom.github.dpb587.robotstxtd\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\"\x8b\x05\n" +
+	"'com/github/dpb587/robotstxtd/file.proto\x12\x1ccom.github.dpb587.robotstxtd\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\"\x8e\x05\n" +
 	"\x04File\x12J\n" +
 	"\tauthority\x18\x01 \x01(\v2,.com.github.dpb587.robotstxtd.File.AuthorityR\tauthority\x12G\n" +
 	"\bupstream\x18\x02 \x01(\v2+.com.github.dpb587.robotstxtd.File.UpstreamR\bupstream\x12@\n" +
-	"\x04body\x18\x03 \x01(\v2'.com.github.dpb587.robotstxtd.File.BodyH\x00R\x04body\x88\x01\x01\x1aI\n" +
+	"\x04body\x18\x03 \x01(\v2'.com.github.dpb587.robotstxtd.File.BodyH\x00R\x04body\x88\x01\x01\x1aL\n" +
 	"\tAuthority\x12\x1f\n" +
 	"\vservice_uri\x18\x01 \x01(\tR\n" +
-	"serviceUri\x12\x1b\n" +
-	"\tcache_key\x18\x02 \x01(\tR\bcacheKey\x1a\x9d\x02\n" +
+	"serviceUri\x12\x1e\n" +
+	"\n" +
+	"generation\x18\x02 \x01(\tR\n" +
+	"generation\x1a\x9d\x02\n" +
 	"\bUpstream\x12\x10\n" +
 	"\x03uri\x18\x01 \x01(\tR\x03uri\x12.\n" +
 	"\x04time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x04time\x12R\n" +

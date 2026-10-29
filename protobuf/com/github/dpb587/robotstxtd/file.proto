@@ -9,7 +9,7 @@ import "google/rpc/status.proto";
 message File {
   message Authority {
     string service_uri = 1;
-    string cache_key = 2;
+    string generation = 2;
   }
 
   Authority authority = 1;

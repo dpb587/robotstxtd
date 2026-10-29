@@ -1,0 +1,27 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/htmx.min.js"></script>
+</head>
+<body class="min-h-screen bg-stone-100 text-stone-900 antialiased">
+  <header class="border-b border-stone-300 bg-stone-950 text-stone-100">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-6 py-4">
+      <a href="/files" class="text-sm font-semibold tracking-tight">robotstxtd</a>
+      <nav class="flex gap-5 text-sm">
+        <a href="/files" class="{{if eq .Nav "files"}}text-white{{else}}text-stone-400 hover:text-white{{end}}">Files</a>
+        <a href="/evaluate" class="{{if eq .Nav "evaluate"}}text-white{{else}}text-stone-400 hover:text-white{{end}}">Evaluate</a>
+        <a href="/" class="{{if eq .Nav "bot"}}text-white{{else}}text-stone-400 hover:text-white{{end}}">Bot</a>
+      </nav>
+    </div>
+  </header>
+  <main class="mx-auto max-w-6xl px-6 py-8">
+    {{template "content" .Body}}
+  </main>
+</body>
+</html>
+{{end}}

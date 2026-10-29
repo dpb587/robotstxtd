@@ -10,6 +10,7 @@ import (
 	"github.com/dpb587/robotstxtd/internal"
 	"github.com/dpb587/robotstxtd/robotstxtdpb"
 	"github.com/dpb587/robotstxtd/robotstxtdutil"
+	"golang.org/x/sync/singleflight"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,32 +26,20 @@ type Service struct {
 	cacheGetFileMutex     sync.RWMutex
 	cacheGetFileByService map[string]*robotstxtdpb.File
 
-	queueGetFileUpstream chan queueGetFileUpstreamRequest
+	getFileGroup singleflight.Group
 }
 
 var _ robotstxtdpb.CrawlerClient = &Service{}
 
 func NewService(log *slog.Logger, upstream robotstxtdpb.CrawlerClient) *Service {
-	s := &Service{
+	return &Service{
 		log:                   log,
 		upstream:              upstream,
 		cacheGetFileByService: map[string]*robotstxtdpb.File{},
-		queueGetFileUpstream:  make(chan queueGetFileUpstreamRequest, 64),
 	}
-
-	go func() {
-		s.log.Info("thread (GetFileUpstream) started")
-		defer s.log.Info("thread (GetFileUpstream) done")
-
-		s.queueGetFileUpstreamWorker()
-	}()
-
-	return s
 }
 
 func (s *Service) Close() error {
-	close(s.queueGetFileUpstream)
-
 	return nil
 }
 
@@ -72,8 +61,15 @@ func (s *Service) GetBot(ctx context.Context, req *robotstxtdpb.Crawler_GetBot_R
 	return s.cacheGetBot, nil
 }
 
+func (s *Service) ListFiles(ctx context.Context, req *robotstxtdpb.Crawler_ListFiles_Request, opts ...grpc.CallOption) (*robotstxtdpb.Crawler_ListFiles_Response, error) {
+	return s.upstream.ListFiles(ctx, req, opts...)
+}
+
 func (s *Service) InvalidateFileCache(ctx context.Context, req *robotstxtdpb.Crawler_InvalidateFileCache_Request, opts ...grpc.CallOption) (*robotstxtdpb.Crawler_InvalidateFileCache_Response, error) {
+	s.cacheGetFileMutex.Lock()
 	delete(s.cacheGetFileByService, req.ServiceUri)
+	s.cacheGetFileMutex.Unlock()
+	s.getFileGroup.Forget(req.ServiceUri)
 
 	return s.upstream.InvalidateFileCache(ctx, req, opts...)
 }

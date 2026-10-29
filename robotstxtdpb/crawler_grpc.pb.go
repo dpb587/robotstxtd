@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Crawler_GetBot_FullMethodName              = "/com.github.dpb587.robotstxtd.Crawler/GetBot"
 	Crawler_GetFile_FullMethodName             = "/com.github.dpb587.robotstxtd.Crawler/GetFile"
+	Crawler_ListFiles_FullMethodName           = "/com.github.dpb587.robotstxtd.Crawler/ListFiles"
 	Crawler_InvalidateFileCache_FullMethodName = "/com.github.dpb587.robotstxtd.Crawler/InvalidateFileCache"
 	Crawler_EvaluateUri_FullMethodName         = "/com.github.dpb587.robotstxtd.Crawler/EvaluateUri"
 )
@@ -31,6 +32,7 @@ const (
 type CrawlerClient interface {
 	GetBot(ctx context.Context, in *Crawler_GetBot_Request, opts ...grpc.CallOption) (*UserAgent, error)
 	GetFile(ctx context.Context, in *Crawler_GetFile_Request, opts ...grpc.CallOption) (*File, error)
+	ListFiles(ctx context.Context, in *Crawler_ListFiles_Request, opts ...grpc.CallOption) (*Crawler_ListFiles_Response, error)
 	InvalidateFileCache(ctx context.Context, in *Crawler_InvalidateFileCache_Request, opts ...grpc.CallOption) (*Crawler_InvalidateFileCache_Response, error)
 	EvaluateUri(ctx context.Context, in *Crawler_EvaluateUri_Request, opts ...grpc.CallOption) (*UriEvaluation, error)
 }
@@ -63,6 +65,16 @@ func (c *crawlerClient) GetFile(ctx context.Context, in *Crawler_GetFile_Request
 	return out, nil
 }
 
+func (c *crawlerClient) ListFiles(ctx context.Context, in *Crawler_ListFiles_Request, opts ...grpc.CallOption) (*Crawler_ListFiles_Response, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Crawler_ListFiles_Response)
+	err := c.cc.Invoke(ctx, Crawler_ListFiles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *crawlerClient) InvalidateFileCache(ctx context.Context, in *Crawler_InvalidateFileCache_Request, opts ...grpc.CallOption) (*Crawler_InvalidateFileCache_Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Crawler_InvalidateFileCache_Response)
@@ -89,6 +101,7 @@ func (c *crawlerClient) EvaluateUri(ctx context.Context, in *Crawler_EvaluateUri
 type CrawlerServer interface {
 	GetBot(context.Context, *Crawler_GetBot_Request) (*UserAgent, error)
 	GetFile(context.Context, *Crawler_GetFile_Request) (*File, error)
+	ListFiles(context.Context, *Crawler_ListFiles_Request) (*Crawler_ListFiles_Response, error)
 	InvalidateFileCache(context.Context, *Crawler_InvalidateFileCache_Request) (*Crawler_InvalidateFileCache_Response, error)
 	EvaluateUri(context.Context, *Crawler_EvaluateUri_Request) (*UriEvaluation, error)
 	mustEmbedUnimplementedCrawlerServer()
@@ -106,6 +119,9 @@ func (UnimplementedCrawlerServer) GetBot(context.Context, *Crawler_GetBot_Reques
 }
 func (UnimplementedCrawlerServer) GetFile(context.Context, *Crawler_GetFile_Request) (*File, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFile not implemented")
+}
+func (UnimplementedCrawlerServer) ListFiles(context.Context, *Crawler_ListFiles_Request) (*Crawler_ListFiles_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListFiles not implemented")
 }
 func (UnimplementedCrawlerServer) InvalidateFileCache(context.Context, *Crawler_InvalidateFileCache_Request) (*Crawler_InvalidateFileCache_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InvalidateFileCache not implemented")
@@ -170,6 +186,24 @@ func _Crawler_GetFile_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Crawler_ListFiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Crawler_ListFiles_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CrawlerServer).ListFiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Crawler_ListFiles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CrawlerServer).ListFiles(ctx, req.(*Crawler_ListFiles_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Crawler_InvalidateFileCache_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Crawler_InvalidateFileCache_Request)
 	if err := dec(in); err != nil {
@@ -220,6 +254,10 @@ var Crawler_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFile",
 			Handler:    _Crawler_GetFile_Handler,
+		},
+		{
+			MethodName: "ListFiles",
+			Handler:    _Crawler_ListFiles_Handler,
 		},
 		{
 			MethodName: "InvalidateFileCache",

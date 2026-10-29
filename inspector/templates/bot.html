@@ -1,0 +1,28 @@
+{{define "content"}}
+<section class="max-w-xl">
+  <h1 class="text-lg font-semibold tracking-tight">Bot</h1>
+  <p class="mt-1 text-sm text-stone-600">Identity sent on upstream robots.txt fetches.</p>
+  <dl class="mt-6 divide-y divide-stone-200 border-y border-stone-200">
+    <div class="grid grid-cols-3 gap-4 py-3 text-sm">
+      <dt class="text-stone-500">Identifier</dt>
+      <dd class="col-span-2 font-medium">{{.Bot.Identifier}}</dd>
+    </div>
+    <div class="grid grid-cols-3 gap-4 py-3 text-sm">
+      <dt class="text-stone-500">Version</dt>
+      <dd class="col-span-2">{{.Bot.Version}}</dd>
+    </div>
+    <div class="grid grid-cols-3 gap-4 py-3 text-sm">
+      <dt class="text-stone-500">URL</dt>
+      <dd class="col-span-2 break-all"><a class="text-emerald-800 underline decoration-emerald-800/30 hover:decoration-emerald-800" href="{{.Bot.URL}}">{{.Bot.URL}}</a></dd>
+    </div>
+    <div class="grid grid-cols-3 gap-4 py-3 text-sm">
+      <dt class="text-stone-500">Email</dt>
+      <dd class="col-span-2 break-all"><a class="text-emerald-800 underline decoration-emerald-800/30 hover:decoration-emerald-800" href="mailto:{{.Bot.Email}}">{{.Bot.Email}}</a></dd>
+    </div>
+    <div class="grid grid-cols-3 gap-4 py-3 text-sm">
+      <dt class="text-stone-500">User-Agent</dt>
+      <dd class="col-span-2 break-all font-mono text-xs">{{.Bot.Client}}</dd>
+    </div>
+  </dl>
+</section>
+{{end}}

@@ -17,7 +17,7 @@ func (s *Service) InvalidateFileCache(ctx context.Context, req *robotstxtdpb.Cra
 
 	res, err := s.db.Exec(
 		`
-			UPDATE cache2
+			UPDATE cache
 			SET invalidate_time = ?
 			WHERE
 				service_uri = ?

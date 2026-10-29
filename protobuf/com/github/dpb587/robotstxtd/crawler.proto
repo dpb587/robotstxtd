@@ -4,6 +4,7 @@ package com.github.dpb587.robotstxtd;
 option go_package = "github.com/dpb587/robotstxtd/robotstxtdpb";
 
 import "google/protobuf/timestamp.proto";
+import "google/rpc/status.proto";
 import "com/github/dpb587/robotstxtd/file.proto";
 import "com/github/dpb587/robotstxtd/uri_evaluation.proto";
 import "com/github/dpb587/robotstxtd/user_agent.proto";
@@ -12,6 +13,7 @@ service Crawler {
   rpc GetBot(Crawler_GetBot.Request) returns (UserAgent);
 
   rpc GetFile(Crawler_GetFile.Request) returns (File);
+  rpc ListFiles(Crawler_ListFiles.Request) returns (Crawler_ListFiles.Response);
   rpc InvalidateFileCache(Crawler_InvalidateFileCache.Request) returns (Crawler_InvalidateFileCache.Response);
 
   rpc EvaluateUri(Crawler_EvaluateUri.Request) returns (UriEvaluation);
@@ -25,6 +27,37 @@ message Crawler_GetFile {
   message Request {
     string service_uri = 1;
     optional string correlation_key = 2;
+  }
+}
+
+message Crawler_ListFiles {
+  message Request {
+    uint32 page_size = 1;
+    string page_token = 2;
+    bool include_invalidated = 3;
+  }
+
+  message Summary {
+    string service_uri = 1;
+    string generation = 2;
+    google.protobuf.Timestamp request_time = 3;
+    google.protobuf.Timestamp stale_time = 4;
+
+    message Response {
+      uint32 status_code = 1;
+    }
+
+    oneof result {
+      Response response = 5;
+      google.rpc.Status error = 6;
+    }
+
+    bool invalidated = 7;
+  }
+
+  message Response {
+    repeated Summary files = 1;
+    string next_page_token = 2;
   }
 }
 

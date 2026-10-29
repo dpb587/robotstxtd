@@ -20,7 +20,7 @@ func (robotstxtEval *UriEvaluation) ToStatusProto() (*status.Status, error) {
 			Domain: "github.com/dpb587/robotstxtd",
 			Metadata: map[string]string{
 				"authorityServiceUri": robotstxtEval.Authority.ServiceUri,
-				"authorityCacheKey":   robotstxtEval.Authority.CacheKey,
+				"authorityGeneration": robotstxtEval.Authority.Generation,
 			},
 		}
 

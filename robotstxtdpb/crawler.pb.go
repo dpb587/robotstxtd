@@ -7,6 +7,7 @@
 package robotstxtdpb
 
 import (
+	status "google.golang.org/genproto/googleapis/rpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -94,6 +95,42 @@ func (*Crawler_GetFile) Descriptor() ([]byte, []int) {
 	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{1}
 }
 
+type Crawler_ListFiles struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Crawler_ListFiles) Reset() {
+	*x = Crawler_ListFiles{}
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Crawler_ListFiles) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Crawler_ListFiles) ProtoMessage() {}
+
+func (x *Crawler_ListFiles) ProtoReflect() protoreflect.Message {
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Crawler_ListFiles.ProtoReflect.Descriptor instead.
+func (*Crawler_ListFiles) Descriptor() ([]byte, []int) {
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{2}
+}
+
 type Crawler_InvalidateFileCache struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -102,7 +139,7 @@ type Crawler_InvalidateFileCache struct {
 
 func (x *Crawler_InvalidateFileCache) Reset() {
 	*x = Crawler_InvalidateFileCache{}
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[2]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -114,7 +151,7 @@ func (x *Crawler_InvalidateFileCache) String() string {
 func (*Crawler_InvalidateFileCache) ProtoMessage() {}
 
 func (x *Crawler_InvalidateFileCache) ProtoReflect() protoreflect.Message {
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[2]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -127,7 +164,7 @@ func (x *Crawler_InvalidateFileCache) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Crawler_InvalidateFileCache.ProtoReflect.Descriptor instead.
 func (*Crawler_InvalidateFileCache) Descriptor() ([]byte, []int) {
-	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{2}
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{3}
 }
 
 type Crawler_EvaluateUri struct {
@@ -138,7 +175,7 @@ type Crawler_EvaluateUri struct {
 
 func (x *Crawler_EvaluateUri) Reset() {
 	*x = Crawler_EvaluateUri{}
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[3]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -150,7 +187,7 @@ func (x *Crawler_EvaluateUri) String() string {
 func (*Crawler_EvaluateUri) ProtoMessage() {}
 
 func (x *Crawler_EvaluateUri) ProtoReflect() protoreflect.Message {
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[3]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -163,7 +200,7 @@ func (x *Crawler_EvaluateUri) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Crawler_EvaluateUri.ProtoReflect.Descriptor instead.
 func (*Crawler_EvaluateUri) Descriptor() ([]byte, []int) {
-	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{3}
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{4}
 }
 
 type Crawler_GetBot_Request struct {
@@ -174,7 +211,7 @@ type Crawler_GetBot_Request struct {
 
 func (x *Crawler_GetBot_Request) Reset() {
 	*x = Crawler_GetBot_Request{}
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[4]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -186,7 +223,7 @@ func (x *Crawler_GetBot_Request) String() string {
 func (*Crawler_GetBot_Request) ProtoMessage() {}
 
 func (x *Crawler_GetBot_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[4]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -212,7 +249,7 @@ type Crawler_GetFile_Request struct {
 
 func (x *Crawler_GetFile_Request) Reset() {
 	*x = Crawler_GetFile_Request{}
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[5]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -224,7 +261,7 @@ func (x *Crawler_GetFile_Request) String() string {
 func (*Crawler_GetFile_Request) ProtoMessage() {}
 
 func (x *Crawler_GetFile_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[5]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -254,6 +291,284 @@ func (x *Crawler_GetFile_Request) GetCorrelationKey() string {
 	return ""
 }
 
+type Crawler_ListFiles_Request struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	PageSize           uint32                 `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken          string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	IncludeInvalidated bool                   `protobuf:"varint,3,opt,name=include_invalidated,json=includeInvalidated,proto3" json:"include_invalidated,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *Crawler_ListFiles_Request) Reset() {
+	*x = Crawler_ListFiles_Request{}
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Crawler_ListFiles_Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Crawler_ListFiles_Request) ProtoMessage() {}
+
+func (x *Crawler_ListFiles_Request) ProtoReflect() protoreflect.Message {
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Crawler_ListFiles_Request.ProtoReflect.Descriptor instead.
+func (*Crawler_ListFiles_Request) Descriptor() ([]byte, []int) {
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{2, 0}
+}
+
+func (x *Crawler_ListFiles_Request) GetPageSize() uint32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *Crawler_ListFiles_Request) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *Crawler_ListFiles_Request) GetIncludeInvalidated() bool {
+	if x != nil {
+		return x.IncludeInvalidated
+	}
+	return false
+}
+
+type Crawler_ListFiles_Summary struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	ServiceUri  string                 `protobuf:"bytes,1,opt,name=service_uri,json=serviceUri,proto3" json:"service_uri,omitempty"`
+	Generation  string                 `protobuf:"bytes,2,opt,name=generation,proto3" json:"generation,omitempty"`
+	RequestTime *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=request_time,json=requestTime,proto3" json:"request_time,omitempty"`
+	StaleTime   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=stale_time,json=staleTime,proto3" json:"stale_time,omitempty"`
+	// Types that are valid to be assigned to Result:
+	//
+	//	*Crawler_ListFiles_Summary_Response_
+	//	*Crawler_ListFiles_Summary_Error
+	Result        isCrawler_ListFiles_Summary_Result `protobuf_oneof:"result"`
+	Invalidated   bool                               `protobuf:"varint,7,opt,name=invalidated,proto3" json:"invalidated,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Crawler_ListFiles_Summary) Reset() {
+	*x = Crawler_ListFiles_Summary{}
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Crawler_ListFiles_Summary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Crawler_ListFiles_Summary) ProtoMessage() {}
+
+func (x *Crawler_ListFiles_Summary) ProtoReflect() protoreflect.Message {
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Crawler_ListFiles_Summary.ProtoReflect.Descriptor instead.
+func (*Crawler_ListFiles_Summary) Descriptor() ([]byte, []int) {
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{2, 1}
+}
+
+func (x *Crawler_ListFiles_Summary) GetServiceUri() string {
+	if x != nil {
+		return x.ServiceUri
+	}
+	return ""
+}
+
+func (x *Crawler_ListFiles_Summary) GetGeneration() string {
+	if x != nil {
+		return x.Generation
+	}
+	return ""
+}
+
+func (x *Crawler_ListFiles_Summary) GetRequestTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.RequestTime
+	}
+	return nil
+}
+
+func (x *Crawler_ListFiles_Summary) GetStaleTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StaleTime
+	}
+	return nil
+}
+
+func (x *Crawler_ListFiles_Summary) GetResult() isCrawler_ListFiles_Summary_Result {
+	if x != nil {
+		return x.Result
+	}
+	return nil
+}
+
+func (x *Crawler_ListFiles_Summary) GetResponse() *Crawler_ListFiles_Summary_Response {
+	if x != nil {
+		if x, ok := x.Result.(*Crawler_ListFiles_Summary_Response_); ok {
+			return x.Response
+		}
+	}
+	return nil
+}
+
+func (x *Crawler_ListFiles_Summary) GetError() *status.Status {
+	if x != nil {
+		if x, ok := x.Result.(*Crawler_ListFiles_Summary_Error); ok {
+			return x.Error
+		}
+	}
+	return nil
+}
+
+func (x *Crawler_ListFiles_Summary) GetInvalidated() bool {
+	if x != nil {
+		return x.Invalidated
+	}
+	return false
+}
+
+type isCrawler_ListFiles_Summary_Result interface {
+	isCrawler_ListFiles_Summary_Result()
+}
+
+type Crawler_ListFiles_Summary_Response_ struct {
+	Response *Crawler_ListFiles_Summary_Response `protobuf:"bytes,5,opt,name=response,proto3,oneof"`
+}
+
+type Crawler_ListFiles_Summary_Error struct {
+	Error *status.Status `protobuf:"bytes,6,opt,name=error,proto3,oneof"`
+}
+
+func (*Crawler_ListFiles_Summary_Response_) isCrawler_ListFiles_Summary_Result() {}
+
+func (*Crawler_ListFiles_Summary_Error) isCrawler_ListFiles_Summary_Result() {}
+
+type Crawler_ListFiles_Response struct {
+	state         protoimpl.MessageState       `protogen:"open.v1"`
+	Files         []*Crawler_ListFiles_Summary `protobuf:"bytes,1,rep,name=files,proto3" json:"files,omitempty"`
+	NextPageToken string                       `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Crawler_ListFiles_Response) Reset() {
+	*x = Crawler_ListFiles_Response{}
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Crawler_ListFiles_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Crawler_ListFiles_Response) ProtoMessage() {}
+
+func (x *Crawler_ListFiles_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Crawler_ListFiles_Response.ProtoReflect.Descriptor instead.
+func (*Crawler_ListFiles_Response) Descriptor() ([]byte, []int) {
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{2, 2}
+}
+
+func (x *Crawler_ListFiles_Response) GetFiles() []*Crawler_ListFiles_Summary {
+	if x != nil {
+		return x.Files
+	}
+	return nil
+}
+
+func (x *Crawler_ListFiles_Response) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type Crawler_ListFiles_Summary_Response struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StatusCode    uint32                 `protobuf:"varint,1,opt,name=status_code,json=statusCode,proto3" json:"status_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Crawler_ListFiles_Summary_Response) Reset() {
+	*x = Crawler_ListFiles_Summary_Response{}
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Crawler_ListFiles_Summary_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Crawler_ListFiles_Summary_Response) ProtoMessage() {}
+
+func (x *Crawler_ListFiles_Summary_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Crawler_ListFiles_Summary_Response.ProtoReflect.Descriptor instead.
+func (*Crawler_ListFiles_Summary_Response) Descriptor() ([]byte, []int) {
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{2, 1, 0}
+}
+
+func (x *Crawler_ListFiles_Summary_Response) GetStatusCode() uint32 {
+	if x != nil {
+		return x.StatusCode
+	}
+	return 0
+}
+
 type Crawler_InvalidateFileCache_Request struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ServiceUri    string                 `protobuf:"bytes,1,opt,name=service_uri,json=serviceUri,proto3" json:"service_uri,omitempty"`
@@ -264,7 +579,7 @@ type Crawler_InvalidateFileCache_Request struct {
 
 func (x *Crawler_InvalidateFileCache_Request) Reset() {
 	*x = Crawler_InvalidateFileCache_Request{}
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[6]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -276,7 +591,7 @@ func (x *Crawler_InvalidateFileCache_Request) String() string {
 func (*Crawler_InvalidateFileCache_Request) ProtoMessage() {}
 
 func (x *Crawler_InvalidateFileCache_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[6]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -289,7 +604,7 @@ func (x *Crawler_InvalidateFileCache_Request) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use Crawler_InvalidateFileCache_Request.ProtoReflect.Descriptor instead.
 func (*Crawler_InvalidateFileCache_Request) Descriptor() ([]byte, []int) {
-	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{2, 0}
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{3, 0}
 }
 
 func (x *Crawler_InvalidateFileCache_Request) GetServiceUri() string {
@@ -314,7 +629,7 @@ type Crawler_InvalidateFileCache_Response struct {
 
 func (x *Crawler_InvalidateFileCache_Response) Reset() {
 	*x = Crawler_InvalidateFileCache_Response{}
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[7]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -326,7 +641,7 @@ func (x *Crawler_InvalidateFileCache_Response) String() string {
 func (*Crawler_InvalidateFileCache_Response) ProtoMessage() {}
 
 func (x *Crawler_InvalidateFileCache_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[7]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -339,7 +654,7 @@ func (x *Crawler_InvalidateFileCache_Response) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use Crawler_InvalidateFileCache_Response.ProtoReflect.Descriptor instead.
 func (*Crawler_InvalidateFileCache_Response) Descriptor() ([]byte, []int) {
-	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{2, 1}
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{3, 1}
 }
 
 type Crawler_EvaluateUri_Request struct {
@@ -351,7 +666,7 @@ type Crawler_EvaluateUri_Request struct {
 
 func (x *Crawler_EvaluateUri_Request) Reset() {
 	*x = Crawler_EvaluateUri_Request{}
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[8]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -363,7 +678,7 @@ func (x *Crawler_EvaluateUri_Request) String() string {
 func (*Crawler_EvaluateUri_Request) ProtoMessage() {}
 
 func (x *Crawler_EvaluateUri_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[8]
+	mi := &file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -376,7 +691,7 @@ func (x *Crawler_EvaluateUri_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Crawler_EvaluateUri_Request.ProtoReflect.Descriptor instead.
 func (*Crawler_EvaluateUri_Request) Descriptor() ([]byte, []int) {
-	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{3, 0}
+	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP(), []int{4, 0}
 }
 
 func (x *Crawler_EvaluateUri_Request) GetUri() string {
@@ -390,7 +705,7 @@ var File_com_github_dpb587_robotstxtd_crawler_proto protoreflect.FileDescriptor
 
 const file_com_github_dpb587_robotstxtd_crawler_proto_rawDesc = "" +
 	"\n" +
-	"*com/github/dpb587/robotstxtd/crawler.proto\x12\x1ccom.github.dpb587.robotstxtd\x1a\x1fgoogle/protobuf/timestamp.proto\x1a'com/github/dpb587/robotstxtd/file.proto\x1a1com/github/dpb587/robotstxtd/uri_evaluation.proto\x1a-com/github/dpb587/robotstxtd/user_agent.proto\"\x1b\n" +
+	"*com/github/dpb587/robotstxtd/crawler.proto\x12\x1ccom.github.dpb587.robotstxtd\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/rpc/status.proto\x1a'com/github/dpb587/robotstxtd/file.proto\x1a1com/github/dpb587/robotstxtd/uri_evaluation.proto\x1a-com/github/dpb587/robotstxtd/user_agent.proto\"\x1b\n" +
 	"\x0eCrawler_GetBot\x1a\t\n" +
 	"\aRequest\"\x7f\n" +
 	"\x0fCrawler_GetFile\x1al\n" +
@@ -398,7 +713,32 @@ const file_com_github_dpb587_robotstxtd_crawler_proto_rawDesc = "" +
 	"\vservice_uri\x18\x01 \x01(\tR\n" +
 	"serviceUri\x12,\n" +
 	"\x0fcorrelation_key\x18\x02 \x01(\tH\x00R\x0ecorrelationKey\x88\x01\x01B\x12\n" +
-	"\x10_correlation_key\"\xa7\x01\n" +
+	"\x10_correlation_key\"\xbb\x05\n" +
+	"\x11Crawler_ListFiles\x1av\n" +
+	"\aRequest\x12\x1b\n" +
+	"\tpage_size\x18\x01 \x01(\rR\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12/\n" +
+	"\x13include_invalidated\x18\x03 \x01(\bR\x12includeInvalidated\x1a\xa9\x03\n" +
+	"\aSummary\x12\x1f\n" +
+	"\vservice_uri\x18\x01 \x01(\tR\n" +
+	"serviceUri\x12\x1e\n" +
+	"\n" +
+	"generation\x18\x02 \x01(\tR\n" +
+	"generation\x12=\n" +
+	"\frequest_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\vrequestTime\x129\n" +
+	"\n" +
+	"stale_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tstaleTime\x12^\n" +
+	"\bresponse\x18\x05 \x01(\v2@.com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary.ResponseH\x00R\bresponse\x12*\n" +
+	"\x05error\x18\x06 \x01(\v2\x12.google.rpc.StatusH\x00R\x05error\x12 \n" +
+	"\vinvalidated\x18\a \x01(\bR\vinvalidated\x1a+\n" +
+	"\bResponse\x12\x1f\n" +
+	"\vstatus_code\x18\x01 \x01(\rR\n" +
+	"statusCodeB\b\n" +
+	"\x06result\x1a\x81\x01\n" +
+	"\bResponse\x12M\n" +
+	"\x05files\x18\x01 \x03(\v27.com.github.dpb587.robotstxtd.Crawler_ListFiles.SummaryR\x05files\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xa7\x01\n" +
 	"\x1bCrawler_InvalidateFileCache\x1a|\n" +
 	"\aRequest\x12\x1f\n" +
 	"\vservice_uri\x18\x01 \x01(\tR\n" +
@@ -410,10 +750,11 @@ const file_com_github_dpb587_robotstxtd_crawler_proto_rawDesc = "" +
 	"\bResponse\"2\n" +
 	"\x13Crawler_EvaluateUri\x1a\x1b\n" +
 	"\aRequest\x12\x10\n" +
-	"\x03uri\x18\x01 \x01(\tR\x03uri2\xee\x03\n" +
+	"\x03uri\x18\x01 \x01(\tR\x03uri2\xee\x04\n" +
 	"\aCrawler\x12g\n" +
 	"\x06GetBot\x124.com.github.dpb587.robotstxtd.Crawler_GetBot.Request\x1a'.com.github.dpb587.robotstxtd.UserAgent\x12d\n" +
-	"\aGetFile\x125.com.github.dpb587.robotstxtd.Crawler_GetFile.Request\x1a\".com.github.dpb587.robotstxtd.File\x12\x9c\x01\n" +
+	"\aGetFile\x125.com.github.dpb587.robotstxtd.Crawler_GetFile.Request\x1a\".com.github.dpb587.robotstxtd.File\x12~\n" +
+	"\tListFiles\x127.com.github.dpb587.robotstxtd.Crawler_ListFiles.Request\x1a8.com.github.dpb587.robotstxtd.Crawler_ListFiles.Response\x12\x9c\x01\n" +
 	"\x13InvalidateFileCache\x12A.com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Request\x1aB.com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Response\x12u\n" +
 	"\vEvaluateUri\x129.com.github.dpb587.robotstxtd.Crawler_EvaluateUri.Request\x1a+.com.github.dpb587.robotstxtd.UriEvaluationB+Z)github.com/dpb587/robotstxtd/robotstxtdpbb\x06proto3"
 
@@ -429,37 +770,50 @@ func file_com_github_dpb587_robotstxtd_crawler_proto_rawDescGZIP() []byte {
 	return file_com_github_dpb587_robotstxtd_crawler_proto_rawDescData
 }
 
-var file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_com_github_dpb587_robotstxtd_crawler_proto_goTypes = []any{
 	(*Crawler_GetBot)(nil),                       // 0: com.github.dpb587.robotstxtd.Crawler_GetBot
 	(*Crawler_GetFile)(nil),                      // 1: com.github.dpb587.robotstxtd.Crawler_GetFile
-	(*Crawler_InvalidateFileCache)(nil),          // 2: com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache
-	(*Crawler_EvaluateUri)(nil),                  // 3: com.github.dpb587.robotstxtd.Crawler_EvaluateUri
-	(*Crawler_GetBot_Request)(nil),               // 4: com.github.dpb587.robotstxtd.Crawler_GetBot.Request
-	(*Crawler_GetFile_Request)(nil),              // 5: com.github.dpb587.robotstxtd.Crawler_GetFile.Request
-	(*Crawler_InvalidateFileCache_Request)(nil),  // 6: com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Request
-	(*Crawler_InvalidateFileCache_Response)(nil), // 7: com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Response
-	(*Crawler_EvaluateUri_Request)(nil),          // 8: com.github.dpb587.robotstxtd.Crawler_EvaluateUri.Request
-	(*timestamppb.Timestamp)(nil),                // 9: google.protobuf.Timestamp
-	(*UserAgent)(nil),                            // 10: com.github.dpb587.robotstxtd.UserAgent
-	(*File)(nil),                                 // 11: com.github.dpb587.robotstxtd.File
-	(*UriEvaluation)(nil),                        // 12: com.github.dpb587.robotstxtd.UriEvaluation
+	(*Crawler_ListFiles)(nil),                    // 2: com.github.dpb587.robotstxtd.Crawler_ListFiles
+	(*Crawler_InvalidateFileCache)(nil),          // 3: com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache
+	(*Crawler_EvaluateUri)(nil),                  // 4: com.github.dpb587.robotstxtd.Crawler_EvaluateUri
+	(*Crawler_GetBot_Request)(nil),               // 5: com.github.dpb587.robotstxtd.Crawler_GetBot.Request
+	(*Crawler_GetFile_Request)(nil),              // 6: com.github.dpb587.robotstxtd.Crawler_GetFile.Request
+	(*Crawler_ListFiles_Request)(nil),            // 7: com.github.dpb587.robotstxtd.Crawler_ListFiles.Request
+	(*Crawler_ListFiles_Summary)(nil),            // 8: com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary
+	(*Crawler_ListFiles_Response)(nil),           // 9: com.github.dpb587.robotstxtd.Crawler_ListFiles.Response
+	(*Crawler_ListFiles_Summary_Response)(nil),   // 10: com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary.Response
+	(*Crawler_InvalidateFileCache_Request)(nil),  // 11: com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Request
+	(*Crawler_InvalidateFileCache_Response)(nil), // 12: com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Response
+	(*Crawler_EvaluateUri_Request)(nil),          // 13: com.github.dpb587.robotstxtd.Crawler_EvaluateUri.Request
+	(*timestamppb.Timestamp)(nil),                // 14: google.protobuf.Timestamp
+	(*status.Status)(nil),                        // 15: google.rpc.Status
+	(*UserAgent)(nil),                            // 16: com.github.dpb587.robotstxtd.UserAgent
+	(*File)(nil),                                 // 17: com.github.dpb587.robotstxtd.File
+	(*UriEvaluation)(nil),                        // 18: com.github.dpb587.robotstxtd.UriEvaluation
 }
 var file_com_github_dpb587_robotstxtd_crawler_proto_depIdxs = []int32{
-	9,  // 0: com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Request.before_time:type_name -> google.protobuf.Timestamp
-	4,  // 1: com.github.dpb587.robotstxtd.Crawler.GetBot:input_type -> com.github.dpb587.robotstxtd.Crawler_GetBot.Request
-	5,  // 2: com.github.dpb587.robotstxtd.Crawler.GetFile:input_type -> com.github.dpb587.robotstxtd.Crawler_GetFile.Request
-	6,  // 3: com.github.dpb587.robotstxtd.Crawler.InvalidateFileCache:input_type -> com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Request
-	8,  // 4: com.github.dpb587.robotstxtd.Crawler.EvaluateUri:input_type -> com.github.dpb587.robotstxtd.Crawler_EvaluateUri.Request
-	10, // 5: com.github.dpb587.robotstxtd.Crawler.GetBot:output_type -> com.github.dpb587.robotstxtd.UserAgent
-	11, // 6: com.github.dpb587.robotstxtd.Crawler.GetFile:output_type -> com.github.dpb587.robotstxtd.File
-	7,  // 7: com.github.dpb587.robotstxtd.Crawler.InvalidateFileCache:output_type -> com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Response
-	12, // 8: com.github.dpb587.robotstxtd.Crawler.EvaluateUri:output_type -> com.github.dpb587.robotstxtd.UriEvaluation
-	5,  // [5:9] is the sub-list for method output_type
-	1,  // [1:5] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	14, // 0: com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary.request_time:type_name -> google.protobuf.Timestamp
+	14, // 1: com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary.stale_time:type_name -> google.protobuf.Timestamp
+	10, // 2: com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary.response:type_name -> com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary.Response
+	15, // 3: com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary.error:type_name -> google.rpc.Status
+	8,  // 4: com.github.dpb587.robotstxtd.Crawler_ListFiles.Response.files:type_name -> com.github.dpb587.robotstxtd.Crawler_ListFiles.Summary
+	14, // 5: com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Request.before_time:type_name -> google.protobuf.Timestamp
+	5,  // 6: com.github.dpb587.robotstxtd.Crawler.GetBot:input_type -> com.github.dpb587.robotstxtd.Crawler_GetBot.Request
+	6,  // 7: com.github.dpb587.robotstxtd.Crawler.GetFile:input_type -> com.github.dpb587.robotstxtd.Crawler_GetFile.Request
+	7,  // 8: com.github.dpb587.robotstxtd.Crawler.ListFiles:input_type -> com.github.dpb587.robotstxtd.Crawler_ListFiles.Request
+	11, // 9: com.github.dpb587.robotstxtd.Crawler.InvalidateFileCache:input_type -> com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Request
+	13, // 10: com.github.dpb587.robotstxtd.Crawler.EvaluateUri:input_type -> com.github.dpb587.robotstxtd.Crawler_EvaluateUri.Request
+	16, // 11: com.github.dpb587.robotstxtd.Crawler.GetBot:output_type -> com.github.dpb587.robotstxtd.UserAgent
+	17, // 12: com.github.dpb587.robotstxtd.Crawler.GetFile:output_type -> com.github.dpb587.robotstxtd.File
+	9,  // 13: com.github.dpb587.robotstxtd.Crawler.ListFiles:output_type -> com.github.dpb587.robotstxtd.Crawler_ListFiles.Response
+	12, // 14: com.github.dpb587.robotstxtd.Crawler.InvalidateFileCache:output_type -> com.github.dpb587.robotstxtd.Crawler_InvalidateFileCache.Response
+	18, // 15: com.github.dpb587.robotstxtd.Crawler.EvaluateUri:output_type -> com.github.dpb587.robotstxtd.UriEvaluation
+	11, // [11:16] is the sub-list for method output_type
+	6,  // [6:11] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_com_github_dpb587_robotstxtd_crawler_proto_init() }
@@ -470,15 +824,19 @@ func file_com_github_dpb587_robotstxtd_crawler_proto_init() {
 	file_com_github_dpb587_robotstxtd_file_proto_init()
 	file_com_github_dpb587_robotstxtd_uri_evaluation_proto_init()
 	file_com_github_dpb587_robotstxtd_user_agent_proto_init()
-	file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[5].OneofWrappers = []any{}
 	file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[6].OneofWrappers = []any{}
+	file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[8].OneofWrappers = []any{
+		(*Crawler_ListFiles_Summary_Response_)(nil),
+		(*Crawler_ListFiles_Summary_Error)(nil),
+	}
+	file_com_github_dpb587_robotstxtd_crawler_proto_msgTypes[11].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_com_github_dpb587_robotstxtd_crawler_proto_rawDesc), len(file_com_github_dpb587_robotstxtd_crawler_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

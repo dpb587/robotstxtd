@@ -1,0 +1,29 @@
+{{define "file-rows"}}
+{{range .Rows}}
+<tr class="border-t border-stone-200 align-top">
+  <td class="py-3 pr-4"><a class="break-all font-mono text-xs text-emerald-900 hover:underline" href="/file?service_uri={{urlquery .ServiceURI}}">{{.ServiceURI}}</a></td>
+  <td class="py-3 pr-4 font-mono text-xs text-stone-700">{{.Generation}}</td>
+  <td class="whitespace-nowrap py-3 pr-4 text-stone-700">{{.RequestTime}}</td>
+  <td class="whitespace-nowrap py-3 pr-4 text-stone-700">{{.StaleTime}}</td>
+  <td class="py-3 pr-4 {{.StatusClass}}">{{.Status}}</td>
+  <td class="py-3 text-stone-600">{{if .Invalidated}}yes{{else}}no{{end}}</td>
+</tr>
+{{else}}
+<tr class="border-t border-stone-200">
+  <td class="py-6 text-sm text-stone-500" colspan="6">No files in this page.</td>
+</tr>
+{{end}}
+{{if .NextPageToken}}
+<tr id="file-more">
+  <td class="py-4" colspan="6">
+    <button
+      type="button"
+      class="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-800 hover:bg-stone-50"
+      hx-get="/files?partial=1&page_size={{.PageSize}}&page_token={{urlquery .NextPageToken}}{{if .IncludeInvalidated}}&include_invalidated=1{{end}}"
+      hx-target="#file-more"
+      hx-swap="outerHTML"
+    >Next page</button>
+  </td>
+</tr>
+{{end}}
+{{end}}

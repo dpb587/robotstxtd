@@ -125,6 +125,48 @@ func NewCommand() *cobra.Command {
 	}
 
 	{
+		var pageSize uint32
+		var pageToken string
+		var includeInvalidated bool
+
+		listFilesCommand := &cobra.Command{
+			Use:  "list-files",
+			Args: cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				serviceClientValue, err := fServiceClient.New()
+				if err != nil {
+					return err
+				}
+
+				defer serviceClientValue.ConnectionCloser()
+
+				client := serviceClientValue.ServiceClient
+
+				res, err := client.ListFiles(cmd.Context(), &robotstxtdpb.Crawler_ListFiles_Request{
+					PageSize:           pageSize,
+					PageToken:          pageToken,
+					IncludeInvalidated: includeInvalidated,
+				})
+				if err != nil {
+					return fmt.Errorf("api: list: %v", err)
+				}
+
+				return doOutput(cmd, res, func() error {
+					_, err := cmd.OutOrStdout().Write([]byte(prototext.Format(res)))
+
+					return err
+				})
+			},
+		}
+
+		listFilesCommand.Flags().Uint32Var(&pageSize, "page-size", 50, "page size (max 200)")
+		listFilesCommand.Flags().StringVar(&pageToken, "page-token", "", "opaque page token (last generation seen)")
+		listFilesCommand.Flags().BoolVar(&includeInvalidated, "include-invalidated", false, "include invalidated rows")
+
+		cmd.AddCommand(listFilesCommand)
+	}
+
+	{
 		invalidateFileCacheCommand := &cobra.Command{
 			Use:  "invalidate-file-cache ORIGIN",
 			Args: cobra.ExactArgs(1),

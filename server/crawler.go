@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dpb587/robotstxtd/robotstxtdpb"
+	"golang.org/x/sync/singleflight"
 )
 
 type Service struct {
@@ -19,7 +20,7 @@ type Service struct {
 	clientTimeout time.Duration
 	bot           *robotstxtdpb.UserAgent
 
-	getFileUpstreamTaskRequests chan queueGetFileUpstreamRequest
+	getFileGroup singleflight.Group
 }
 
 var _ robotstxtdpb.CrawlerServer = &Service{}
@@ -35,23 +36,13 @@ func NewService(log *slog.Logger, db *sql.DB, client *http.Client, clientTimeout
 		panic("missing user agent email")
 	}
 
-	s := &Service{
-		log:                         log,
-		db:                          db,
-		client:                      client,
-		clientTimeout:               clientTimeout,
-		bot:                         bot,
-		getFileUpstreamTaskRequests: make(chan queueGetFileUpstreamRequest, 128),
+	return &Service{
+		log:           log,
+		db:            db,
+		client:        client,
+		clientTimeout: clientTimeout,
+		bot:           bot,
 	}
-
-	go func() {
-		s.log.Info("thread (GetFileUpstream) started")
-		defer s.log.Info("thread (GetFileUpstream) done")
-
-		s.queueGetFileUpstreamWorker()
-	}()
-
-	return s
 }
 
 func (s *Service) GetBot(ctx context.Context, req *robotstxtdpb.Crawler_GetBot_Request) (*robotstxtdpb.UserAgent, error) {
@@ -61,8 +52,8 @@ func (s *Service) GetBot(ctx context.Context, req *robotstxtdpb.Crawler_GetBot_R
 func (s *Service) Prune() error {
 	res, err := s.db.Exec(
 		`
-			DELETE FROM cache2
-			WHERE invalidate_time IS NULL
+			DELETE FROM cache
+			WHERE invalidate_time IS NOT NULL
 		`,
 	)
 	if err != nil {
@@ -79,11 +70,9 @@ func (s *Service) Prune() error {
 		"rows", resCount,
 	)
 
-	return err
+	return nil
 }
 
 func (s *Service) Close() error {
-	close(s.getFileUpstreamTaskRequests)
-
 	return nil
 }
